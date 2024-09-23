@@ -4,7 +4,7 @@ set -e
 
 source .env
 
-# Lambda function configuration
+# Lambda func configurations (edit for your own)
 LAMBDA_FUNCTION_NAME="${LAMBDA_FUNCTION_NAME:-flexnet-gx-lambda}"
 LAMBDA_FUNCTION_ARN="${LAMBDA_FUNCTION_ARN:-arn:aws:lambda:us-east-1:339712792986:function:flexnet-gx-lambda}"
 LAMBDA_RUNTIME="${LAMBDA_RUNTIME:-provided.al2}"

@@ -4,7 +4,7 @@ set -e
 
 source .env
 
-# AWS deployment configuration
+# AWS deployment configurations (edit for your own)
 AWS_REGION="${AWS_REGION:-us-east-1}"
 S3_BUCKET="${S3_BUCKET:-flexnetgx-kit}"
 LAMBDA_FUNCTION_NAME="${LAMBDA_FUNCTION_NAME:-flexnet-gx-lambda}"
