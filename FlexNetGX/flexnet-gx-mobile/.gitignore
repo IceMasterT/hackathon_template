@@ -1,0 +1,6 @@
+# flexnet-gx-mobile/.gitignore
+
+/target/
+*.apk
+*.aab
+*.ipa

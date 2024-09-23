@@ -2,13 +2,15 @@
 
 set -e
 
+source .env
+
 # Lambda function configuration
-LAMBDA_FUNCTION_NAME="flexnet-gx-lambda"
-LAMBDA_FUNCTION_ARN="arn:aws:lambda:us-east-1:339712792986:function:flexnet-gx-lambda"
-LAMBDA_RUNTIME="provided.al2"
-LAMBDA_HANDLER="bootstrap"
-LAMBDA_ROLE_NAME="flexnet-gx-lambda-role-jk2rfgx9"
-LAMBDA_ROLE_ARN="arn:aws:iam::339712792986:role/$LAMBDA_ROLE_NAME"
+LAMBDA_FUNCTION_NAME="${LAMBDA_FUNCTION_NAME:-flexnet-gx-lambda}"
+LAMBDA_FUNCTION_ARN="${LAMBDA_FUNCTION_ARN:-arn:aws:lambda:us-east-1:339712792986:function:flexnet-gx-lambda}"
+LAMBDA_RUNTIME="${LAMBDA_RUNTIME:-provided.al2}"
+LAMBDA_HANDLER="${LAMBDA_HANDLER:-bootstrap}"
+LAMBDA_ROLE_NAME="${LAMBDA_ROLE_NAME:-flexnet-gx-lambda-role-jk2rfgx9}"
+LAMBDA_ROLE_ARN="${LAMBDA_ROLE_ARN:-arn:aws:iam::339712792986:role/$LAMBDA_ROLE_NAME}"
 
 # Build and deploy Lambda function
 echo "Building and packaging Lambda function..."

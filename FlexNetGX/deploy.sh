@@ -2,12 +2,14 @@
 
 set -e
 
+source .env
+
 # AWS deployment configuration
-AWS_REGION="us-east-1"
-S3_BUCKET="flexnetgx-kit"
-LAMBDA_FUNCTION_NAME="flexnet-gx-lambda"
-API_GATEWAY_ID="0re8k6t744"
-CLOUDFRONT_DISTRIBUTION_ID="EJ0WHQ9X3XAGH"
+AWS_REGION="${AWS_REGION:-us-east-1}"
+S3_BUCKET="${S3_BUCKET:-flexnetgx-kit}"
+LAMBDA_FUNCTION_NAME="${LAMBDA_FUNCTION_NAME:-flexnet-gx-lambda}"
+API_GATEWAY_ID="${API_GATEWAY_ID:-0re8k6t744}"
+CLOUDFRONT_DISTRIBUTION_ID="${CLOUDFRONT_DISTRIBUTION_ID:-EJ0WHQ9X3XAGH}"
 
 # Function to check if a command exists
 command_exists() {
