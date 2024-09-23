@@ -1,0 +1,1 @@
+/media/ddd/4a055554-01c0-4efb-b8ef-fcab3945714d/home/ddd/~acmewerx/flexnetgx/FlexNetGX/flexnet-gx-blockchain/target/release/libflexnet_gx_blockchain.so: /media/ddd/4a055554-01c0-4efb-b8ef-fcab3945714d/home/ddd/~acmewerx/flexnetgx/FlexNetGX/flexnet-gx-blockchain/src/lib.rs
