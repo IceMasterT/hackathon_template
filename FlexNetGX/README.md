@@ -139,6 +139,7 @@ To find Lambda Roles
 ```
 aws iam list-roles | grep "RoleName.*lambda"
 ```
+# NEXT >> Go to the README.md in folder 'flexnet-gx-web'
 
 ## Contributing
 Feel free to reach out to @kitbaroness
