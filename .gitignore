@@ -50,4 +50,16 @@ yarn-error.log
 /blockchain/target/
 
 # Ignore all .tfvars files, which are likely to contain sensitive data
-*.tfvars
+*.tfvarsz
+
+# Ignore environment files
+.env
+.env.*
+.env.backup
+!.env.example
+
+# Ignore AWS credentials
+aws_credentials.json
+
+# Ignore test output
+test_output/

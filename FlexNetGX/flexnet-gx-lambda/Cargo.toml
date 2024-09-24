@@ -9,10 +9,15 @@ tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
-aes-gcm = "0.9"
+aes-gcm = "0.10"
 sha2 = "0.10"
 hex = "0.4"
-blake3 = "1.3.2"
+blake3 = "1.3"
+rusoto_core = "0.48"
+rusoto_kms = "0.48"
+rand = "0.8"
+openssl = { version = "0.10", features = ["vendored"] }
+bytes = "1.0"
 
 [[bin]]
 name = "bootstrap"
