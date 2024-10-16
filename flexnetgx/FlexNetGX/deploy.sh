@@ -1,4 +1,4 @@
-#!/bin/bash
+1#!/bin/bash
 
 set -e
 
@@ -6,6 +6,11 @@ set -e
 rustup default stable
 rustup update stable
 rustup target add x86_64-unknown-linux-musl
+
+# Install components for AVS toolkit
+rustup target add wasm32-wasip1
+cargo install cargo-component wkg --force 
+wkg config --default-registry wa.dev
 
 # Function to decrypt secret using KMS
 decrypt_secret() {
@@ -47,12 +52,17 @@ if [ -z "$LAMBDA_FUNCTION_ARN" ]; then
     exit 1
 fi
 
+# Build AVS component
+echo "Building AVS component..."
+cd flexnet-gx-blockchain
+cargo component build --release
+cd ..
+
 # Build and package Lambda function
 echo "Building and packaging Lambda function..."
 cd flexnet-gx-lambda
 cargo build --release --target x86_64-unknown-linux-musl
-zip -j rust.zip ./target/x86_64-unknown-linux-musl/release/bootstrap
-
+zip -j rust.zip ./target/x86_64-unknown-linux-musl/release/bootstrap ../flexnet-gx-blockchain/target/wasm32-wasip1/release/flexnet_gx_blockchain.wasm
 
 # Prepare update-function-configuration command
 UPDATE_CONFIG_CMD="aws lambda update-function-configuration --function-name $LAMBDA_FUNCTION_NAME"
