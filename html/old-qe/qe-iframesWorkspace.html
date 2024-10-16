@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            color: black;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        .table-container {
+            width: 30%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        .draggable {
+            cursor: move;
+            background-color: white;
+        }
+        .droppable {
+            min-height: 50px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .ui-draggable-dragging {
+            background-color: white;
+            color: black;
+        }
+        .remove-btn {
+            cursor: pointer;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Add New Person</h2>
+        <form id="add-person-form">
+            <label for="first-name">First Name:</label>
+            <input type="text" id="first-name" name="first-name" required><br><br>
+            <label for="last-name">Last Name:</label>
+            <input type="text" id="last-name" name="last-name" required><br><br>
+            <label for="phone">Phone:</label>
+            <input type="tel" id="phone" name="phone" required><br><br>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br><br>
+            <label for="role">Role:</label>
+            <select id="role" name="role" required>
+                <option value="Volunteer">Volunteer</option>
+                <option value="Data Scientist">Data Scientist</option>
+                <option value="Researcher">Researcher</option>
+            </select><br><br>
+            <button type="submit">Add Person</button>
+        </form>
+    </div>
+    
+    <div class="container">
+        <div class="table-container">
+            <h2>Unassigned</h2>
+            <div id="unassigned" class="droppable">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Unassigned rows will be here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <h2>Teams</h2>
+            <div class="form-container">
+                <form id="add-team-form">
+                    <label for="team-name">Team Name:</label>
+                    <input type="text" id="team-name" name="team-name" required>
+                    <button type="submit">Add Team</button>
+                </form>
+            </div>
+            <div id="teams" class="droppable">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Team Name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="draggable"><td>Team Alpha</td><td><span class="remove-btn">Remove</span></td></tr>
+                        <tr class="draggable"><td>Team Beta</td><td><span class="remove-btn">Remove</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <h2>Workspace</h2>
+            <div class="form-container">
+                <form id="add-workspace-form">
+                    <label for="workspace-name">Workspace Name:</label>
+                    <input type="text" id="workspace-name" name="workspace-name" required>
+                    <button type="submit">Add Workspace</button>
+                </form>
+            </div>
+            <div id="workspace" class="droppable">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Workspace Name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Workspace rows will be here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(function() {
+            // Initialize draggable and droppable elements
+            function initializeDragAndDrop() {
+                $(".draggable").draggable({
+                    helper: "clone",
+                    revert: "invalid",
+                    start: function(event, ui) {
+                        $(this).hide();
+                    },
+                    stop: function(event, ui) {
+                        $(this).show();
+                    }
+                });
+
+                $(".droppable tbody").droppable({
+                    accept: ".draggable",
+                    drop: function(event, ui) {
+                        var $item = ui.helper.clone();
+                        $item.removeClass("ui-draggable-dragging");
+                        $item.css({ position: "static", width: "100%" });
+                        $(this).append($item);
+                        $(ui.draggable).remove(); // Remove the original item
+                        initializeDragAndDrop(); // Reinitialize drag-and-drop
+                    }
+                });
+
+                // Add remove functionality
+                $(".remove-btn").click(function() {
+                    $(this).closest('tr').remove();
+                });
+            }
+
+            // Form submission handler for adding new person
+            $("#add-person-form").on("submit", function(event) {
+                event.preventDefault();
+                var firstName = $("#first-name").val();
+                var lastName = $("#last-name").val();
+                var phone = $("#phone").val();
+                var email = $("#email").val();
+                var role = $("#role").val();
+                var personRow = `<tr class="draggable"><td>${firstName} ${lastName}</td><td>${role}</td><td><span class="remove-btn">Remove</span></td></tr>`;
+                $("#unassigned tbody").append(personRow);
+                $("#add-person-form")[0].reset(); // Reset the form
+                initializeDragAndDrop(); // Reinitialize drag-and-drop
+            });
+
+            // Form submission handler for adding new team
+            $("#add-team-form").on("submit", function(event) {
+                event.preventDefault();
+                var teamName = $("#team-name").val();
+                var teamRow = `<tr class="draggable"><td>${teamName}</td><td><span class="remove-btn">Remove</span></td></tr>`;
+                $("#teams tbody").append(teamRow);
+                $("#add-team-form")[0].reset(); // Reset the form
+                initializeDragAndDrop(); // Reinitialize drag-and-drop
+            });
+
+            // Form submission handler for adding new workspace
+            $("#add-workspace-form").on("submit", function(event) {
+                event.preventDefault();
+                var workspaceName = $("#workspace-name").val();
+                var workspaceRow = `<tr class="draggable"><td>${workspaceName}</td><td><span class="remove-btn">Remove</span></td></tr>`;
+                $("#workspace tbody").append(workspaceRow);
+                $("#add-workspace-form")[0].reset(); // Reset the form
+                initializeDragAndDrop(); // Reinitialize drag-and-drop
+            });
+
+            // Initial call to initialize drag-and-drop
+            initializeDragAndDrop();
+        });
+    </script>
+</body>
+</html>

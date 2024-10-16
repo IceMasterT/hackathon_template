@@ -1,0 +1,16 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "lambda:UpdateFunctionConfiguration",
+                "lambda:GetFunctionConfiguration"
+            ],
+            "Resource": [
+                "arn:aws:lambda:***:***:function:auth_service",
+                "arn:aws:lambda:*:function:*"
+            ]
+        }
+    ]
+}

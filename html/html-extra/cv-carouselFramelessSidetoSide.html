@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptoversus Carousel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .carousel-container {
+            position: relative;
+            max-width: 1000px;
+            margin: auto;
+            overflow: hidden;
+            border: 2px solid #ddd;
+            background-color: white;
+        }
+
+        .carousel-slide {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .carousel-item {
+            min-width: 100%;
+            box-sizing: border-box;
+            position: relative;
+            text-align: center;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .carousel-caption {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px;
+        }
+
+        .carousel-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .carousel-button.prev {
+            left: 10px;
+        }
+
+        .carousel-button.next {
+            right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .carousel-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="carousel-container">
+        <div class="carousel-slide">
+            <div class="carousel-item">
+                <a href="https://example.com/momaree-doula" target="_blank">
+                    <img src="https://storage.builderall.com//franquias/2/7304564/editor-html/12662917.svg" alt="Momaree Doula">
+                </a>
+            </div>
+            <div class="carousel-item">
+                <a href="https://example.com/field-to-fork" target="_blank">
+                    <img src="https://storage.builderall.com//franquias/2/7304564/editor-html/12662918.svg" alt="Field to Fork">
+                </a>
+            </div>
+            <div class="carousel-item">
+                <a href="https://example.com/ravensong" target="_blank">
+                    <img src="https://storage.builderall.com//franquias/2/7304564/editor-html/12662919.svg" alt="Ravensong">
+                </a>
+            </div>
+            <div class="carousel-item">
+                <a href="https://example.com/velar" target="_blank">
+                    <img src="https://storage.builderall.com//franquias/2/7304564/editor-html/12664112.svg" alt="Velar">
+                </a>
+            </div>
+        </div>
+        <button class="carousel-button prev">&#10094;</button>
+        <button class="carousel-button next">&#10095;</button>
+    </div>
+    <script>
+        const carouselSlide = document.querySelector('.carousel-slide');
+        const carouselItems = document.querySelectorAll('.carousel-item');
+        const prevButton = document.querySelector('.carousel-button.prev');
+        const nextButton = document.querySelector('.carousel-button.next');
+
+        let counter = 0;
+        const size = carouselItems[0].clientWidth;
+
+        function updateCarousel() {
+            carouselSlide.style.transform = 'translateX(' + (-size * counter) + 'px)';
+        }
+
+        function nextSlide() {
+            counter = (counter + 1) % carouselItems.length;
+            carouselSlide.style.transition = 'transform 0.5s ease-in-out';
+            updateCarousel();
+        }
+
+        function prevSlide() {
+            counter = (counter - 1 + carouselItems.length) % carouselItems.length;
+            carouselSlide.style.transition = 'transform 0.5s ease-in-out';
+            updateCarousel();
+        }
+
+        nextButton.addEventListener('click', nextSlide);
+        prevButton.addEventListener('click', prevSlide);
+
+        setInterval(nextSlide, 5000); // Rotate every 5 seconds
+    </script>
+</body>
+</html>

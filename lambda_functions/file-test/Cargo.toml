@@ -1,0 +1,18 @@
+[package]
+name = "file-test"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "bootstrap"
+path = "src/main.rs"
+
+[dependencies]
+lambda_http = "0.8.0"
+lambda_runtime = "0.8.0"
+tokio = { version = "1", features = ["macros"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt"] }
+aws-config = "0.55.0"
+aws-sdk-s3 = "0.25.0"
+http = "0.2.9"

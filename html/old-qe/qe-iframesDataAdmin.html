@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV File Manager and Charts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #1c1c1c;
+            color: white;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        h1 {
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #333;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            color: white;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #444;
+            cursor: pointer;
+        }
+        th:hover {
+            background-color: #8250A0;
+        }
+        .row-header {
+            background-color: #333;
+            font-weight: bold;
+        }
+        button {
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            margin: 5px;
+            background-color: #444;
+            color: white;
+            border: 1px solid #8250A0;
+            transition: background-color 0.3s;
+            border-radius: 0; /* Remove rounded edges */
+        }
+        button:hover {
+            background-color: #8250A0;
+        }
+        #tableWrapper {
+            display: none;
+            margin-top: 20px;
+            position: relative;
+            width: 90%;
+            margin: 0 auto;
+            height: calc(100vh - 60px); /* Adjust to fit within the viewport */
+            overflow: auto; /* Enable scrolling */
+        }
+        #fileInput {
+            display: none;
+        }
+        .menu-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #1c1c1c;
+            padding: 5px 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+        }
+        .menu-bar .dropdown {
+            position: relative;
+            display: inline-block;
+            margin: 0 5px;
+        }
+        .menu-bar .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #444;
+            min-width: 160px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+        .menu-bar .dropdown-content a {
+            color: white;
+            padding: 10px 12px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+            border: 1px solid #8250A0;
+            border-radius: 0; /* Remove rounded edges */
+        }
+        .menu-bar .dropdown-content a:hover {
+            background-color: #8250A0;
+        }
+        .menu-bar .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .scroll-container {
+            overflow-x: auto;
+            position: relative;
+            padding-top: 50px; /* Adjust padding to account for fixed menu */
+        }
+        .sticky-scroll {
+            position: sticky;
+            bottom: 0;
+            width: 100%;
+            overflow-x: auto;
+            background: #1c1c1c;
+        }
+        .scroll-div {
+            height: 1px;
+            width: 200%; /* Adjust this width based on table width */
+        }
+        .chart-container {
+            display: none;
+            margin-top: 20px;
+        }
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="fileInput" accept=".csv">
+    <div class="menu-bar">
+        <div class="dropdown">
+            <button>File</button>
+            <div class="dropdown-content">
+                <a href="#" id="newButton">New</a>
+                <a href="#" id="openButton">Open</a>
+                <a href="#" id="closeButton">Close</a>
+                <a href="#" id="openLastTabButton">Open Last Tab</a>
+                <a href="#" id="printButton">Print</a>
+                <div>
+                    <input type="text" id="csvUrl" placeholder="Enter CSV file URL">
+                    <button id="importButton">Import CSV</button>
+                </div>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button>Edit</button>
+            <div class="dropdown-content">
+                <a href="#" id="undoButton">Undo</a>
+                <a href="#" id="redoButton">Redo</a>
+                <a href="#" id="cutButton">Cut</a>
+                <a href="#" id="copyButton">Copy</a>
+                <a href="#" id="pasteButton">Paste</a>
+                <a href="#" id="pasteMatchButton">Paste to Match</a>
+                <a href="#" id="deleteButton">Delete</a>
+                <a href="#" id="selectAllButton">Select All</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button>View</button>
+            <div class="dropdown-content">
+                <a href="#" id="reloadButton">Reload</a>
+                <a href="#" id="forceReloadButton">Force Reload</a>
+                <a href="#" id="fitButton">Fit</a>
+                <a href="#" id="zoomInButton">Zoom In</a>
+                <a href="#" id="zoomOutButton">Zoom Out</a>
+                <a href="#" id="toggleFullscreenButton">Toggle Fullscreen</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button>History</button>
+            <div class="dropdown-content">
+                <a href="#" id="backButton">Back</a>
+                <a href="#" id="forwardButton">Forward</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button>Window</button>
+            <div class="dropdown-content">
+                <a href="#" id="minimizeButton">Minimize</a>
+                <a href="#" id="maximizeButton">Maximize</a>
+                <a href="#" id="showFirstButton">Show First</a>
+                <a href="#" id="showLastButton">Show Last</a>
+                <a href="#" id="showPreviousButton">Show Previous</a>
+                <a href="#" id="showNextButton">Show Next</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button>Visual Data</button>
+            <div class="dropdown-content">
+                <a href="#" onclick="showChart('https://rwhetsel-quantum-eye-test.site.builderall.net/chart-pie', 'Pie Chart')">Pie Chart</a>
+                <a href="#" onclick="showChart('https://rwhetsel-quantum-eye-test.site.builderall.net/chart-bar', 'Bar Chart')">Bar Chart</a>
+                <a href="#" onclick="showChart('https://rwhetsel-quantum-eye-test.site.builderall.net/chart-compbar', 'Comparison Bar Chart')">Comparison Bar Chart</a>
+                <a href="#" onclick="showChart('https://rwhetsel-quantum-eye-test.site.builderall.net/chart-line', 'Line Chart')">Line Chart</a>
+                <a href="#" onclick="showChart('https://rwhetsel-quantum-eye-test.site.builderall.net/chart-dot', 'Dot Chart')">Dot Chart</a>
+            </div>
+        </div>
+    </div>
+    <div id="tableWrapper">
+        <div class="scroll-container">
+            <table id="csvTable">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="sticky-scroll">
+            <div class="scroll-div"></div>
+        </div>
+    </div>
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const tableWrapper = document.getElementById('tableWrapper');
+        const csvTable = document.getElementById('csvTable');
+        const scrollContainer = document.querySelector('.scroll-container');
+        const stickyScroll = document.querySelector('.sticky-scroll');
+        const scrollDiv = document.querySelector('.scroll-div');
+
+        // Sync scrolling between the table and the sticky scrollbar
+        stickyScroll.addEventListener('scroll', () => {
+            scrollContainer.scrollLeft = stickyScroll.scrollLeft;
+        });
+
+        scrollContainer.addEventListener('scroll', () => {
+            stickyScroll.scrollLeft = scrollContainer.scrollLeft;
+        });
+
+        document.getElementById('newButton').addEventListener('click', () => {
+            const columns = prompt('Enter the number of columns for the new CSV:', '3');
+            const rows = prompt('Enter the number of rows for the new CSV:', '5');
+
+            if (columns && rows) {
+                createNewCSV(parseInt(columns), parseInt(rows));
+            }
+        });
+
+        function createNewCSV(columns, rows) {
+            const thead = csvTable.querySelector('thead');
+            const tbody = csvTable.querySelector('tbody');
+
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            // Create header row
+            const headerRow = document.createElement('tr');
+            const cornerCell = document.createElement('th');
+            cornerCell.textContent = '#';
+            headerRow.appendChild(cornerCell);
+            for (let i = 0; i < columns; i++) {
+                const th = document.createElement('th');
+                th.contentEditable = true;
+                th.textContent = `Column ${i + 1}`;
+                th.addEventListener('click', () => {
+                    sortTable(i + 1);
+                });
+                headerRow.appendChild(th);
+            }
+            thead.appendChild(headerRow);
+
+            // Create body rows
+            for (let i = 0; i < rows; i++) {
+                const tr = document.createElement('tr');
+                const rowHeader = document.createElement('td');
+                rowHeader.contentEditable = true;
+                rowHeader.textContent = `Row ${i + 1}`;
+                rowHeader.className = 'row-header';
+                tr.appendChild(rowHeader);
+                for (let j = 0; j < columns; j++) {
+                    const td = document.createElement('td');
+                    td.contentEditable = true;
+                    td.textContent = '';
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+
+            tableWrapper.style.display = 'block';
+            adjustScrollWidth(); // Adjust the width of the scroll-div based on table width
+        }
+
+        document.getElementById('openButton').addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    loadCSV(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        document.getElementById('importButton').addEventListener('click', function() {
+            const url = document.getElementById('csvUrl').value.trim();
+            if (!url) {
+                alert('Please enter the URL of the CSV file.');
+                return;
+            }
+            const apiUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+
+            fetch(apiUrl)
+                .then(response => response.text())
+                .then(data => {
+                    loadCSV(data);
+                    document.getElementById('tableWrapper').style.display = 'block';
+                })
+                .catch(error => alert('Failed to load CSV: ' + error));
+        });
+
+        function loadCSV(data) {
+            const rows = data.split('\n').map(row => row.split(','));
+            const thead = document.querySelector('#csvTable thead');
+            const tbody = document.querySelector('#csvTable tbody');
+
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            const headerRow = document.createElement('tr');
+            rows[0].forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            rows.slice(1).forEach((row, rowIndex) => {
+                const tr = document.createElement('tr');
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+
+            tableWrapper.style.display = 'block';
+        }
+
+        document.getElementById('exportButton').addEventListener('click', () => {
+            const csv = tableToCSV();
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'exported.csv';
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('saveButton').addEventListener('click', () => {
+            const csv = tableToCSV();
+            localStorage.setItem('savedCSV', csv);
+            alert('CSV saved locally.');
+        });
+
+        document.getElementById('saveAsButton').addEventListener('click', () => {
+            const fileName = prompt('Enter the file name:', 'exported.csv');
+            if (fileName) {
+                const csv = tableToCSV();
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                link.click;
+                URL.revokeObjectURL(url);
+            }
+        });
+
+        document.getElementById('deleteButton').addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete the CSV file?')) {
+                csvTable.querySelector('thead').innerHTML = '';
+                csvTable.querySelector('tbody').innerHTML = '';
+                tableWrapper.style.display = 'none';
+            }
+        });
+
+        document.getElementById('closeButton').addEventListener('click', () => {
+            if (confirm('Are you sure you want to close the CSV file?')) {
+                csvTable.querySelector('thead').innerHTML = '';
+                csvTable.querySelector('tbody').innerHTML = '';
+                tableWrapper.style.display = 'none';
+            }
+        });
+
+        document.getElementById('printButton').addEventListener('click', () => {
+            const csv = tableToCSV();
+            const printWindow = window.open('', '', 'width=800,height=600');
+            printWindow.document.write('<pre>' + csv + '</pre>');
+            printWindow.document.close();
+            printWindow.print();
+        });
+
+        function loadCSV(data) {
+            const rows = data.split('\n').map(row => row.split(','));
+            thead = csvTable.querySelector('thead');
+            tbody = csvTable.querySelector('tbody');
+
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            // Create header row
+            const headerRow = document.createElement('tr');
+            const cornerCell = document.createElement('th');
+            cornerCell.textContent = '#';
+            headerRow.appendChild(cornerCell);
+            rows[0].forEach((cell, index) => {
+                const th = document.createElement('th');
+                th.contentEditable = true;
+                th.textContent = cell;
+                th.addEventListener('click', () => {
+                    sortTable(index + 1);
+                });
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            // Create body rows
+            rows.slice(1).forEach((row, rowIndex) => {
+                const tr = document.createElement('tr');
+                 const rowHeader = document.createElement('td');
+                rowHeader.contentEditable = true;
+                rowHeader.textContent = `Row ${rowIndex + 1}`;
+                rowHeader.className = 'row-header';
+                tr.appendChild(rowHeader);
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.contentEditable = true;
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+
+            tableWrapper.style.display = 'block';
+            adjustScrollWidth(); // Adjust the width of the scroll-div based on table width
+        }
+
+        function tableToCSV() {
+            const rows = [];
+            csvTable.querySelectorAll('tr').forEach(row => {
+                const cells = [];
+                row.querySelectorAll('th, td').forEach(cell => {
+                    cells.push(cell.textContent);
+                });
+                rows.push(cells.join(','));
+            });
+            return rows.join('\n');
+        }
+
+        function sortTable(columnIndex) {
+            const rows = Array.from(csvTable.querySelectorAll('tbody tr'));
+            const headerCell = csvTable.querySelector(`thead th:nth-child(${columnIndex + 1})`);
+            const isAscending = !headerCell.classList.contains('asc');
+            rows.sort((a, b) => {
+                const aText = a.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
+                const bText = b.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
+                return isAscending ? aText.localeCompare(bText) : bText.localeCompare(aText);
+            });
+            rows.forEach(row => csvTable.querySelector('tbody').appendChild(row));
+            csvTable.querySelectorAll('thead th').forEach(th => th.classList.remove('asc', 'desc'));
+            headerCell.classList.toggle('asc', isAscending);
+            headerCell.classList.toggle('desc', !isAscending);
+        }
+
+        function adjustScrollWidth() {
+            const tableWidth = csvTable.offsetWidth;
+            scrollDiv.style.width = tableWidth + 'px';
+        }
+
+        function showChart(url, title) {
+            const popup = window.open("", title, "width=800,height=600");
+            popup.document.write('<html><head><title>' + title + '</title></head><body>');
+            popup.document.write('<iframe src="' + url + '" width="100%" height="100%"></iframe>');
+            popup.document.write('</body></html>');
+            popup.document.close();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey) {
+                switch (event.key) {
+                    case 'p':
+                        document.getElementById('printButton').click();
+                        break;
+                    case 'z':
+                        document.getElementById('undoButton').click();
+                        break;
+                    case 'y':
+                        document.getElementById('redoButton').click();
+                        break;
+                    case 'x':
+                        document.getElementById('cutButton').click();
+                        break;
+                    case 'c':
+                        document.getElementById('copyButton').click();
+                        break;
+                    case 'v':
+                        document.getElementById('pasteButton').click();
+                        break;
+                    case 'a':
+                        document.getElementById('selectAllButton').click();
+                        break;
+                    case 'F5':
+                        document.getElementById('forceReloadButton').click();
+                        break;
+                    default:
+                        break;
+                }
+            } else if (event.key === 'F5') {
+                document.getElementById('reloadButton').click();
+            } else if (event.key === 'F11') {
+                document.getElementById('toggleFullscreenButton').click();
+            } else if (event.key === 'ArrowLeft' && event.ctrlKey) {
+                document.getElementById('backButton'). click();
+            } else if (event.key === 'ArrowRight' && event.ctrlKey) {
+                document.getElementById('forwardButton'). click();
+            } else if (event.key === 'ArrowDown' && event.metaKey) {
+                document.getElementById('minimizeButton'). click();
+            } else if (event.key === 'ArrowUp' && event.metaKey) {
+                document.getElementById('maximizeButton'). click();
+            } else if (event.key === 'Home') {
+                document.getElementById('showFirstButton'). click();
+            } else if (event.key === 'End') {
+                document.getElementById('showLastButton'). click();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Taking App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        #notes {
+            width: 80%;
+            height: 300px;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        #saveButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <textarea id="notes" placeholder="Type your notes here..."></textarea>
+    <button id="saveButton">Save Notes</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const notesField = document.getElementById('notes');
+            const saveButton = document.getElementById('saveButton');
+
+            // Load saved notes from local storage
+            if (localStorage.getItem('notes')) {
+                notesField.value = localStorage.getItem('notes');
+            }
+
+            // Save notes to local storage
+            saveButton.addEventListener('click', () => {
+                localStorage.setItem('notes', notesField.value);
+                alert('Notes saved!');
+            });
+        });
+    </script>
+
+</body>
+</html>

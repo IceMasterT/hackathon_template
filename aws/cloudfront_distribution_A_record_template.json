@@ -1,0 +1,16 @@
+{
+  "Changes": [
+    {
+      "Action": "CREATE",
+      "ResourceRecordSet": {
+        "Name": "${ZONE_DOMAIN_NAME}",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "${ZONE_ID}",
+          "DNSName": "${CLOUDFRONT_DOMAIN}",
+          "EvaluateTargetHealth": false
+        }
+      }
+    }
+  ]
+}

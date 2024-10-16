@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        #welcome-message, #volunteer-instructions {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .button-row {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .button.notification {
+            background-color: #f44336;
+        }
+        #content {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        #help-form {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome-message"></div>
+    
+    <div id="volunteer-instructions"></div>
+    
+    <div class="button-row">
+        <button id="surveys-available" class="button">Surveys Available</button>
+        <button id="surveys-completed" class="button">Surveys Completed</button>
+        <button id="help-button" class="button">Help</button>
+    </div>
+
+    <div id="content"></div>
+
+    <div id="help-form">
+        <h2>Need Help?</h2>
+        <form id="help-request-form">
+            <input type="text" id="full-name" placeholder="Full Name" required>
+            <textarea id="help-message" placeholder="Your message" required></textarea>
+            <button type="submit">Send Help Request</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(function() {
+            // Load welcome message
+            let welcomeMessage = localStorage.getItem('welcomeMessage') || "Welcome to the Volunteer Dashboard!";
+            $("#welcome-message").text(welcomeMessage);
+
+            // Load volunteer instructions
+            let volunteerInstructions = localStorage.getItem('volunteerInstructions') || "No instructions available at the moment.";
+            $("#volunteer-instructions").html("<h3>Volunteer Instructions:</h3><p>" + volunteerInstructions + "</p>");
+
+            // Button click handlers
+            $("#surveys-available").click(function() {
+                // Here you would fetch and display available surveys
+                $("#content").html("<h2>Available Surveys</h2><p>No surveys available at the moment.</p>");
+            });
+
+            $("#surveys-completed").click(function() {
+                // Here you would fetch and display completed surveys
+                $("#content").html("<h2>Completed Surveys</h2><p>You haven't completed any surveys yet.</p>");
+            });
+
+            $("#help-button").click(function() {
+                $("#help-form").toggle();
+            });
+
+            // Help form submission
+            $("#help-request-form").submit(function(e) {
+                e.preventDefault();
+                let fullName = $("#full-name").val();
+                let message = $("#help-message").val();
+                // Here you would send the help request to the admin
+                console.log("Help request from:", fullName, "Message:", message);
+                this.reset();
+                $("#help-form").hide();
+            });
+        });
+    </script>
+</body>
+</html>

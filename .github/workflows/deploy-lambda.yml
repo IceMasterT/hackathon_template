@@ -1,0 +1,139 @@
+name: Deploy Lambda Functions
+
+on:
+  push:
+    branches:
+      - Prototype
+    paths:
+      - 'lambda_functions/**'
+
+env:
+  AWS_REGION: us-east-1
+  LAMBDA_ROLE_NAME: lambda-execution-role
+
+jobs:
+  deploy-lambda:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: x86_64-unknown-linux-musl
+        override: true
+
+    - name: Install musl-tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y musl-tools
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Deploy Lambda functions
+      run: |
+        CHANGED_FUNCTIONS=$(git diff --name-only HEAD~1 HEAD | grep '^lambda_functions/' | cut -d'/' -f2 | sort | uniq | grep -v '^Cargo.toml$')
+        
+        for FUNCTION in $CHANGED_FUNCTIONS; do
+          echo "Processing function: $FUNCTION"
+          
+          if [ ! -d "lambda_functions/$FUNCTION" ]; then
+            echo "Directory lambda_functions/$FUNCTION does not exist, skipping..."
+            continue
+          fi
+          
+          cd lambda_functions/$FUNCTION
+          
+          # Build the function
+          cargo build --release --target x86_64-unknown-linux-musl
+          if [ $? -ne 0 ]; then
+            echo "Build failed for $FUNCTION" >&2
+            exit 1
+          fi
+          
+          # Strip and package the function
+          strip target/x86_64-unknown-linux-musl/release/bootstrap
+          cp target/x86_64-unknown-linux-musl/release/bootstrap bootstrap
+          zip function.zip bootstrap
+          
+          # Check if Lambda function exists
+          if aws lambda get-function --function-name $FUNCTION 2>&1 | grep -q "Function not found"; then
+            # Create new Lambda function
+            aws lambda create-function \
+              --function-name $FUNCTION \
+              --runtime provided.al2 \
+              --role arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.LAMBDA_ROLE_NAME }} \
+              --handler bootstrap \
+              --zip-file fileb://function.zip
+          else
+            # Update existing Lambda function
+            aws lambda update-function-code --function-name $FUNCTION --zip-file fileb://function.zip
+          fi
+          
+          if [ $? -ne 0 ]; then
+            echo "Lambda update/create failed for $FUNCTION" >&2
+            exit 1
+          fi
+          
+          # Check if API Gateway integration exists
+          API_ID=$(aws apigateway get-rest-apis --query "items[?name=='$FUNCTION'].id" --output text)
+          if [ -z "$API_ID" ]; then
+            # Create new API
+            API_ID=$(aws apigateway create-rest-api --name $FUNCTION --query 'id' --output text)
+            ROOT_RESOURCE_ID=$(aws apigateway get-resources --rest-api-id $API_ID --query "items[?path=='/'].id" --output text)
+            
+            # Create resource
+            RESOURCE_ID=$(aws apigateway create-resource --rest-api-id $API_ID --parent-id $ROOT_RESOURCE_ID --path-part $FUNCTION --query 'id' --output text)
+            
+            # Create method
+            aws apigateway put-method --rest-api-id $API_ID --resource-id $RESOURCE_ID --http-method ANY --authorization-type NONE
+            
+            # Set up integration
+            aws apigateway put-integration --rest-api-id $API_ID --resource-id $RESOURCE_ID --http-method ANY --type AWS_PROXY --integration-http-method POST --uri arn:aws:apigateway:$AWS_REGION:lambda:path/2015-03-31/functions/arn:aws:lambda:$AWS_REGION:${{ secrets.AWS_ACCOUNT_ID }}:function:$FUNCTION/invocations
+          fi
+          
+          # Grant Lambda permission to be invoked by API Gateway (this will update if it already exists)
+          aws lambda add-permission \
+            --function-name $FUNCTION \
+            --statement-id apigateway-invoke-permissions \
+            --action lambda:InvokeFunction \
+            --principal apigateway.amazonaws.com \
+            --source-arn "arn:aws:execute-api:$AWS_REGION:${{ secrets.AWS_ACCOUNT_ID }}:$API_ID/*/*/$FUNCTION" \
+            --output text \
+            || echo "Permission already exists, continuing..."
+          
+          # Verify deployment with retries
+          MAX_RETRIES=6
+          RETRY_DELAY=10
+          for i in $(seq 1 $MAX_RETRIES); do
+            if aws lambda invoke --function-name $FUNCTION --payload '{}' out.txt; then
+              echo "Deployment succeeded for $FUNCTION"
+              break
+            else
+              if [ $i -eq $MAX_RETRIES ]; then
+                echo "Deployment verification failed for $FUNCTION after $MAX_RETRIES attempts" >&2
+                exit 1
+              else
+                echo "Attempt $i failed. Retrying in $RETRY_DELAY seconds..."
+                sleep $RETRY_DELAY
+              fi
+            fi
+          done
+          
+          cd ../..
+        done
+
+    - name: Deploy API Gateway
+      run: |
+        for FUNCTION in $CHANGED_FUNCTIONS; do
+          API_ID=$(aws apigateway get-rest-apis --query "items[?name=='$FUNCTION'].id" --output text)
+          aws apigateway create-deployment --rest-api-id $API_ID --stage-name prod
+        done

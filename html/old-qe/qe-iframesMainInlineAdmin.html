@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1c1c1c;
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrolling */
+        }
+
+        nav {
+            background-color: #333;
+            overflow: visible;
+            padding: 10px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+        }
+
+        #menu {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        .menu-link {
+            padding: 14px 20px;
+            display: block;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            background-color: #444;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .submenu {
+            display: none;
+            position: absolute;
+            background-color: #333;
+            min-width: 160px;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            border: 1px solid #444;
+            border-radius: 4px;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .submenu li a {
+            padding: 12px 16px;
+            display: block;
+            color: white;
+            text-decoration: none;
+        }
+
+        .submenu li a:hover {
+            background-color: #8250A0;
+        }
+
+        #sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: #333;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+
+        .sidebar-link {
+            padding: 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: white;
+            background-color: #8250A0;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar-link:hover {
+            background-color: #9473A6;
+        }
+
+        #close-sidebar {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 36px;
+            color: white;
+        }
+
+        #hamburger {
+            font-size: 30px;
+            cursor: pointer;
+            color: white;
+            padding: 10px;
+            margin-right: auto; /* Move the hamburger menu to the left */
+        }
+
+        .content-area {
+            padding: 80px 20px 20px 20px; /* Add top padding to compensate for fixed nav */
+            height: calc(100vh - 60px);
+            overflow: hidden; /* Prevent scrolling */
+        }
+
+        .tab-content {
+            display: none;
+            height: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+            height: 100%;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 50%;
+            top: 50%;
+            width: 80%;
+            height: 80%;
+            transform: translate(-50%, -50%);
+            background-color: #333;
+            border: 1px solid #444;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .modal iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 36px;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div id="hamburger" onclick="openNav()">&#9776;</div>
+        <ul id="menu">
+            <li style="position: relative;">
+                <a href="#" class="menu-link" id="quantumEyeLink">Quantum Eye</a>
+                <ul class="submenu" id="quantumEyeSubmenu">
+                    <li><a href="#" id="openSettingsTop">Settings</a></li>
+                    <li><a href="https://rwhetsel-quantum-eye-test.site.builderall.net/#" class="submenu-link">Log Out</a></li>
+                    <li><a href="#" id="exitLink">Exit</a></li>
+                </ul>
+            </li>
+            <li style="position: relative;">
+                <a href="#" class="menu-link">Help</a>
+                <ul class="submenu" id="helpSubmenu">
+                    <li><a href="#" id="aboutLink">About</a></li>
+                    <li><a href="#" id="helpDocumentationLink">Open Help Documentation</a></li>
+                    <li><a href="#" id="whatsNewDocumentationLink">Open What's New Documentation</a></li>
+                    <li><a href="#" id="reportIssueLink">Report an Issue</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div id="sidebar">
+        <a href="javascript:void(0)" id="close-sidebar" onclick="closeNav()">&times;</a>
+        <a href="#" id="sidebar-link-dataengineering" class="sidebar-link" data-url="https://rwhetsel-quantum-eye-test.site.builderall.net/data-admin">Data Engineering</a>
+        <a href="#" id="sidebar-link-profile" class="sidebar-link" onclick="openPopup('https://rwhetsel-quantum-eye-test.site.builderall.net/my-account', 'My Profile', 800, 600)">My Profile</a>
+        <a href="#" id="openSettingsSidebar" class="sidebar-link" onclick="openPopup('https://rwhetsel-quantum-eye-test.site.builderall.net/settings', 'Settings', 800, 600)">Settings</a>
+        <a href="#" id="sidebar-link-admin" class="sidebar-link" data-url="https://rwhetsel-quantum-eye-test.site.builderall.net/webadmin">Admin Management</a>
+        <a href="https://rwhetsel-quantum-eye-test.site.builderall.net/#" id="sidebar-link-logout" class="sidebar-link">Logout</a>
+    </div>
+
+    <div class="content-area">
+        <div id="dataengineering" class="tab-content active">
+            <iframe src="https://rwhetsel-quantum-eye-test.site.builderall.net/data-admin" id="dataengineeringIframe"></iframe>
+        </div>
+        <div id="admin" class="tab-content">
+            <iframe src="https://rwhetsel-quantum-eye-test.site.builderall.net/webadmin" id="adminIframe"></iframe>
+        </div>
+        <div id="about" class="tab-content">
+            <h1>About</h1>
+            <p>Quantum Eye is a powerful tool designed to provide insights and analytics for data-driven decision-making. Our goal is to help users efficiently manage and analyze their data with ease and precision.</p>
+        </div>
+        <div id="helpDocumentation" class="tab-content">
+            <h1>Help Documentation</h1>
+            <p>Welcome to the help documentation. Here you will find guides and tutorials to assist you in using Quantum Eye effectively. If you have any questions, refer to the documentation or contact support.</p>
+        </div>
+        <div id="whatsNewDocumentation" class="tab-content">
+            <h1>What's New Documentation</h1>
+            <p>Stay up to date with the latest features and improvements in Quantum Eye. This section covers all recent updates and enhancements to help you make the most out of the new functionalities.</p>
+        </div>
+        <div id="reportIssue" class="tab-content">
+            <h1>Report an Issue</h1>
+            <form id="reportIssueForm">
+                <label for="reporterName">Name (optional):</label>
+                <input type="text" id="reporterName" name="reporterName">
+
+                <label for="issueType">Issue Type:</label>
+                <select id="issueType">
+                    <option value="bug">Bug</option>
+                    <option value="feature">Feature Request</option>
+                    <option value="improvement">Improvement</option>
+                    <option value="other">Other</option>
+                </select>
+
+                <label for="issueDescription">Description:</label>
+                <textarea id="issueDescription" name="issueDescription" rows="4"></textarea>
+
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const quantumEyeLink = document.getElementById("quantumEyeLink");
+            const quantumEyeSubmenu = document.getElementById("quantumEyeSubmenu");
+            const helpSubmenu = document.getElementById("helpSubmenu");
+
+            quantumEyeLink.addEventListener("mouseenter", function() {
+                quantumEyeSubmenu.style.display = "block";
+            });
+
+            quantumEyeLink.addEventListener("mouseleave", function() {
+                quantumEyeSubmenu.style.display = "none";
+            });
+
+            quantumEyeSubmenu.addEventListener("mouseenter", function() {
+                quantumEyeSubmenu.style.display = "block";
+            });
+
+            quantumEyeSubmenu.addEventListener("mouseleave", function() {
+                quantumEyeSubmenu.style.display = "none";
+            });
+
+            const sidebarLinks = document.querySelectorAll(".sidebar-link");
+            const tabContents = document.querySelectorAll(".tab-content");
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener("click", function() {
+                    const targetId = link.id.split('-').pop();
+                    const targetUrl = link.getAttribute('data-url');
+                    if (targetUrl) {
+                        updateIframe(targetId, targetUrl);
+                        tabContents.forEach(tab => {
+                            if (tab.id === targetId) {
+                                tab.classList.add("active");
+                            } else {
+                                tab.classList.remove("active");
+                            }
+                        });
+                        closeNav();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.menu-link').forEach(menuLink => {
+                menuLink.addEventListener('mouseenter', function() {
+                    const submenu = menuLink.nextElementSibling;
+                    if (submenu) submenu.style.display = 'block';
+                });
+                menuLink.addEventListener('mouseleave', function() {
+                    const submenu = menuLink.nextElementSibling;
+                    if (submenu) submenu.style.display = 'none';
+                });
+            });
+
+            document.querySelectorAll('.submenu').forEach(submenu => {
+                submenu.addEventListener('mouseenter', function() {
+                    submenu.style.display = 'block';
+                });
+                submenu.addEventListener('mouseleave', function() {
+                    submenu.style.display = 'none';
+                });
+            });
+
+            document.querySelectorAll('.submenu-link').forEach(submenuLink => {
+                submenuLink.addEventListener('click', function() {
+                    const targetUrl = submenuLink.getAttribute('data-url');
+                    updateIframe('dataengineering', targetUrl);
+                    tabContents.forEach(tab => {
+                        if (tab.id === 'dataengineering') {
+                            tab.classList.add('active');
+                        } else {
+                            tab.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            document.querySelectorAll('#helpSubmenu li a').forEach(helpLink => {
+                helpLink.addEventListener('click', function() {
+                    const targetId = helpLink.id.replace('Link', '');
+                    tabContents.forEach(tab => {
+                        if (tab.id === targetId) {
+                            tab.classList.add('active');
+                        } else {
+                            tab.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('reportIssueForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                alert('Issue submitted! Thank you.');
+                this.reset();
+            });
+
+            document.getElementById('openSettingsTop').addEventListener('click', function() {
+                openPopup('https://rwhetsel-quantum-eye-test.site.builderall.net/settings', 'Settings', 800, 600);
+            });
+
+            function updateIframe(tabId, url) {
+                const iframe = document.getElementById(`${tabId}Iframe`);
+                iframe.src = url;
+            }
+        });
+
+        function openNav() {
+            document.getElementById("sidebar").style.width = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("sidebar").style.width = "0";
+        }
+
+        function openPopup(url, title, w, h) {
+            const left = (screen.width / 2) - (w / 2);
+            const top = (screen.height / 2) - (h / 2);
+            window.open(url, title, `width=${w},height=${h},top=${top},left=${left}`);
+        }
+
+        function closeModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>

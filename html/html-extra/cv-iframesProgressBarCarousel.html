@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embed Carousel</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: transparent;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .carousel-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .progress-bar {
+            width: 20px;
+            height: 300px;
+            background-color: #444;
+            margin-right: 20px;
+            position: relative;
+        }
+
+        .progress {
+            width: 100%;
+            height: 0;
+            background-color: #ff0000;
+            position: absolute;
+            bottom: 0;
+            transition: height 2s linear;
+        }
+
+        .carousel {
+            display: flex;
+            overflow: hidden;
+            width: 600px;
+            height: 300px;
+            position: relative;
+            background-color: transparent;
+        }
+
+        .carousel-item {
+            display: none;
+            flex: 0 0 100%;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: opacity 1s ease;
+            background-color: transparent;
+        }
+
+        .carousel-item.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .carousel-item img {
+            max-width: 50%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .carousel-text {
+            margin-left: 20px;
+            color: #000; /* Set text color to black */
+        }
+
+        .carousel-text h2 {
+            margin: 0 0 10px;
+            color: #000; /* Set text color to black */
+        }
+
+        .carousel-text p {
+            color: #000; /* Set text color to black */
+        }
+
+        .read-more {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            color: #111;
+            background-color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .read-more:hover {
+            background-color: #ddd;
+        }
+
+        /* Responsive styling */
+        @media (max-width: 768px) {
+            .carousel-container {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .progress-bar {
+                width: 100%;
+                height: 20px;
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+
+            .progress {
+                width: 0;
+                height: 100%;
+                bottom: auto;
+                right: 0;
+                transition: width 2s linear;
+            }
+
+            .carousel {
+                width: 100%;
+                height: auto;
+            }
+
+            .carousel-item img {
+                max-width: 80%;
+            }
+
+            .carousel-text {
+                margin-left: 0;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="carousel-container">
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+        <div class="carousel">
+            <div class="carousel-item active">
+                <img src="https://storage.builderall.com//franquias/2/7304564/editor-html/12662917.svg" alt="Momaree">
+                <div class="carousel-text">
+                    <h2>MomaRee Doula</h2>
+                    <p>Personal & Compassionate</p>
+                    <a href="https://cryptoversus.io" class="read-more">Wanna See More?</a>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="https://storage.builderall.com//franquias/2/7304564/editor-html/12662918.svg" alt="Field to Table">
+                <div class="carousel-text">
+                    <h2>Field to Table</h2>
+                    <p>Support Local Farmers</p>
+                    <a href="https://cryptoversus.io" class="read-more">Join Us!</a>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="https://storage.builderall.com//franquias/2/7304564/editor-html/12662919.svg" alt="Ravensong">
+                <div class="carousel-text">
+                    <h2>Ravensong</h2>
+                    <p>Building Builders</p>
+                    <a href="https://cryptoversus.io" class="read-more">Lets Start Building.</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const carouselItems = document.querySelectorAll('.carousel-item');
+            const progressBar = document.querySelector('.progress');
+            let currentIndex = 0;
+            const totalItems = carouselItems.length;
+            const intervalTime = 5000;
+
+            function showNextItem() {
+                carouselItems[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % totalItems;
+                carouselItems[currentIndex].classList.add('active');
+                if (window.innerWidth <= 768) {
+                    progressBar.style.width = ((currentIndex + 1) / totalItems) * 100 + '%';
+                } else {
+                    progressBar.style.height = ((currentIndex + 1) / totalItems) * 100 + '%';
+                }
+            }
+
+            setInterval(showNextItem, intervalTime);
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth <= 768) {
+                    progressBar.style.height = '100%';
+                    progressBar.style.width = ((currentIndex + 1) / totalItems) * 100 + '%';
+                } else {
+                    progressBar.style.width = '100%';
+                    progressBar.style.height = ((currentIndex + 1) / totalItems) * 100 + '%';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

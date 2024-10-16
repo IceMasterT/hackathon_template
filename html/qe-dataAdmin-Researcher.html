@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spreadsheet Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #menu-bar {
+            display: flex;
+            background-color: #f0f0f0;
+            padding: 5px;
+        }
+
+        .menu-item {
+            margin-right: 15px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .menu-item:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        #spreadsheet {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+        }
+
+        #tab-bar {
+            display: flex;
+            background-color: #e0e0e0;
+            padding: 5px;
+        }
+
+        #tabs-container {
+            display: flex;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 5px 10px;
+            margin-right: 5px;
+            background-color: #d0d0d0;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background-color: #f0f0f0;
+        }
+
+        .close-tab {
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+        .close-tab:hover {
+            color: red;
+        }
+
+        table {
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        td,
+        th {
+            border: 1px solid #ccc;
+            padding: 5px;
+            min-width: 50px;
+        }
+
+        input {
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .selected {
+            background-color: #e6f3ff;
+        }
+
+        #function-dropdown {
+            width: 150px;
+            margin-right: 10px;
+        }
+
+        #tab-controls {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+        }
+
+        #tab-controls button {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        #tab-controls button:hover {
+            background-color: #e0e0e0;
+        }
+
+        .dashboard-container {
+            background-color: #1c1c1c;
+            color: white;
+        }
+
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .chart-container h2 {
+            color: #333;
+        }
+
+        #databaseModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            width: 300px;
+        }
+
+        #databaseModal h2 {
+            margin-top: 0;
+        }
+
+        #databaseModal input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #databaseModal button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #databaseModal button:hover {
+            background-color: #45a049;
+        }
+
+        #databaseModal .close {
+            background-color: #f44336;
+        }
+
+        #databaseModal .close:hover {
+            background-color: #da190b;
+        }
+
+        /* Updated styling for the "Open" submenu */
+        .open-submenu {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            display: none;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .menu-item .dropdown-content .menu-item:hover .open-submenu {
+            display: block;
+        }
+
+        .open-submenu a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .open-submenu a:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+</head>
+
+<body>
+    <div id="tab-bar">
+        <div id="tab-controls">
+            <button onclick="navigateTab(-1)">&larr;</button>
+            <button onclick="newTabAtCurrent()">+</button>
+            <button onclick="navigateTab(1)">&rarr;</button>
+        </div>
+        <div id="tabs-container">
+            <!-- Tabs dynamically added here -->
+        </div>
+    </div>
+    <div id="menu-bar">
+        <div class="menu-item">
+            File
+            <div class="dropdown-content">
+                <a href="#" onclick="newSheet()">New</a>
+                <div class="menu-item">
+                    Open
+                    <div class="open-submenu">
+                        <a href="#" onclick="enterCsvUrl()">Enter Data Source URL</a>
+                        <a href="#" onclick="showRecentFiles()">Recent Files</a>
+                        <a href="#" onclick="openExternalData()">Computer</a>
+                        <a href="#" onclick="showDatabaseModal()">Database</a>
+                    </div>
+                </div>
+                <a href="#" onclick="saveLocal()">Save</a>
+                <a href="#" onclick="saveAsCSV()">Save As</a>
+                <a href="#" onclick="printData()">Print</a>
+                <a href="#" onclick="closeCurrentTab()">Close</a>
+                <a href="#" onclick="logout()">Logout</a>
+                <a href="#" onclick="exitApplication()">Exit</a>
+            </div>
+        </div>
+        <div class="menu-item">
+            Edit
+            <div class="dropdown-content">
+                <a href="#" onclick="cutSelectedCells()">Cut</a>
+                <a href="#" onclick="copySelectedCells()">Copy</a>
+                <a href="#" onclick="pasteToSelectedCell()">Paste</a>
+                <a href="#" onclick="addRowsOrColumns('row', 10)">Add 10 Rows</a>
+                <a href="#" onclick="addRowsOrColumns('column', 5)">Add 5 Columns</a>
+            </div>
+        </div>
+        <div class="menu-item">
+            View
+            <div class="dropdown-content">
+                <a href="#" onclick="reloadIframe()">Reload</a>
+                <a href="#" onclick="forceReloadIframe()">Force Reload</a>
+                <a href="#" onclick="fitIframe()">Fit</a>
+                <a href="#" onclick="zoomInIframe()">Zoom In</a>
+                <a href="#" onclick="zoomOutIframe()">Zoom Out</a>
+                <a href="#" onclick="toggleFullScreenIframe()">Toggle Full Screen</a>
+                <a href="#" onclick="toggleFormulaBar()">Formula Bar</a>
+                <a href="#" onclick="toggleGridlines()">Gridlines</a>
+            </div>
+        </div>
+        <div class="menu-item">
+            Insert
+            <div class="dropdown-content">
+                <a href="#" onclick="insertRow()">Row</a>
+                <a href="#" onclick="insertColumn()">Column</a>
+            </div>
+        </div>
+    </div>
+    <div id="formula-bar" style="padding: 5px; background-color: #f0f0f0; display: flex; align-items: center;">
+        <select id="function-dropdown" onchange="insertFunction()">
+            <option value="">Select Function</option>
+            <option value="SUM">SUM</option>
+            <option value="AVERAGE">AVERAGE</option>
+            <option value="COUNT">COUNT</option>
+            <option value="MAX">MAX</option>
+            <option value="MIN">MIN</option>
+        </select>
+        <input type="text" id="formula-input" style="flex-grow: 1;" placeholder="Enter formula here">
+    </div>
+    <div id="spreadsheet"></div>
+    <input type="file" id="fileInput" accept=".csv" style="display: none;">
+
+    <div id="databaseModal">
+        <h2>Database Connection</h2>
+        <label for="db-driver">DB Driver:</label>
+        <input type="text" id="db-driver" placeholder="e.g., MySQL, PostgreSQL">
+        <label for="hostname">Hostname:</label>
+        <input type="text" id="hostname" placeholder="e.g., localhost">
+        <label for="port">Port:</label>
+        <input type="text" id="port" value="1433">
+        <label for="db-name">Name:</label>
+        <input type="text" id="db-name" placeholder="Database Name">
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Username">
+        <label for="password">Password:</label>
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="connectToDatabase()">Connect to Database</button>
+        <button class="close" onclick="closeDatabaseModal()">Cancel</button>
+    </div>
+
+    <script>
+        let ROWS = 100;
+        let COLS = 26;
+        let sheets = [];
+        let currentSheet = 0;
+        let selectedCells = [];
+        let clipboard = null;
+        let zoomLevel = 1;
+
+        function createEmptySheet() {
+            return Array.from({ length: ROWS }, () => Array(COLS).fill(''));
+        }
+
+        function createCell(row, col) {
+            const cell = document.createElement('td');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.dataset.row = row;
+            input.dataset.col = col;
+            input.value = sheets[currentSheet][row][col] || '';
+            input.addEventListener('input', updateCellValue);
+            input.addEventListener('focus', onCellFocus);
+            input.addEventListener('click', onCellClick);
+            cell.appendChild(input);
+            return cell;
+        }
+
+        function renderSheet() {
+            const spreadsheet = document.getElementById('spreadsheet');
+            spreadsheet.innerHTML = '';
+            const table = document.createElement('table');
+
+            // Create header row
+            const headerRow = document.createElement('tr');
+            headerRow.appendChild(document.createElement('th')); // Empty corner cell
+            for (let col = 0; col < sheets[currentSheet][0].length; col++) {
+                const th = document.createElement('th');
+                th.textContent = String.fromCharCode(65 + col);
+                headerRow.appendChild(th);
+            }
+            table.appendChild(headerRow);
+
+            // Create data rows
+            for (let row = 0; row < sheets[currentSheet].length; row++) {
+                const tr = document.createElement('tr');
+                const rowHeader = document.createElement('th');
+                rowHeader.textContent = row + 1;
+                tr.appendChild(rowHeader);
+                for (let col = 0; col < sheets[currentSheet][row].length; col++) {
+                    tr.appendChild(createCell(row, col));
+                }
+                table.appendChild(tr);
+            }
+
+            spreadsheet.appendChild(table);
+        }
+
+        function showDatabaseModal() {
+            document.getElementById('databaseModal').style.display = 'block';
+        }
+
+        function closeDatabaseModal() {
+            document.getElementById('databaseModal').style.display = 'none';
+        }
+
+        function connectToDatabase() {
+            // Here, you would implement the database connection logic.
+            alert('Connecting to Database...');
+            closeDatabaseModal();
+        }
+
+        function renderDashboard(data) {
+            const spreadsheet = document.getElementById('spreadsheet');
+            spreadsheet.innerHTML = '';
+
+            const dashboardContainer = document.createElement('div');
+            dashboardContainer.className = 'dashboard-container';
+            dashboardContainer.style.display = 'grid';
+            dashboardContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+            dashboardContainer.style.gridGap = '20px';
+            dashboardContainer.style.padding = '20px';
+            dashboardContainer.style.backgroundColor = '#1c1c1c';
+
+            // Add charts
+            dashboardContainer.appendChild(createDiagnosisChartContainer());
+            dashboardContainer.appendChild(createAgeDistributionChartContainer());
+            dashboardContainer.appendChild(createTreatmentEfficacyChartContainer());
+            dashboardContainer.appendChild(createLightIntensityChartContainer());
+            dashboardContainer.appendChild(createCorrelationChartContainer());
+            dashboardContainer.appendChild(createCorrelationMatrixContainer());
+
+            spreadsheet.appendChild(dashboardContainer);
+
+            // Convert CSV to JSON and populate the charts
+            const jsonData = csvToJson(data);
+            createDiagnosisChart(jsonData);
+            createAgeDistributionChart(jsonData);
+            createTreatmentEfficacyChart(jsonData);
+            createLightIntensityChart(jsonData);
+            createCorrelationChart(jsonData);
+            createCorrelationMatrix(jsonData);
+        }
+
+        function csvToJson(csv) {
+            const lines = csv.split('\n');
+            const headers = lines[0].split(',').map(header => header.trim());
+            return lines.slice(1).map(line => {
+                const data = line.split(',').map(item => item.trim());
+                return headers.reduce((acc, header, index) => {
+                    acc[header] = data[index];
+                    return acc;
+                }, {});
+            });
+        }
+
+        function createChartContainer(title, chartId) {
+            const container = document.createElement('div');
+            container.className = 'chart-container';
+            container.style.backgroundColor = 'white';
+            container.style.padding = '20px';
+            container.style.borderRadius = '8px';
+            container.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+
+            const heading = document.createElement('h2');
+            heading.textContent = title;
+            heading.style.color = '#333';
+
+            const canvas = document.createElement('canvas');
+            canvas.id = chartId;
+
+            container.appendChild(heading);
+            container.appendChild(canvas);
+
+            return container;
+        }
+
+        function createDiagnosisChartContainer() {
+            return createChartContainer('Distribution of Diagnoses', 'diagnosisChart');
+        }
+
+        function createAgeDistributionChartContainer() {
+            return createChartContainer('Age Distribution of Patients', 'ageDistributionChart');
+        }
+
+        function createTreatmentEfficacyChartContainer() {
+            return createChartContainer('Treatment Efficacy by Diagnosis', 'treatmentEfficacyChart');
+        }
+
+        function createLightIntensityChartContainer() {
+            return createChartContainer('Average Light Intensity by Diagnosis', 'lightIntensityChart');
+        }
+
+        function createCorrelationChartContainer() {
+            return createChartContainer('Age vs Treatment Efficacy', 'correlationChart');
+        }
+
+        function createCorrelationMatrixContainer() {
+            return createChartContainer('Correlation Matrix', 'correlationMatrix');
+        }
+
+        function createDiagnosisChart(data) {
+            const diagnosisCounts = data.reduce((acc, row) => {
+                const diagnosis = row['Diagnosis'] || row['diagnosis'];
+                if (diagnosis) {
+                    acc[diagnosis] = (acc[diagnosis] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('diagnosisChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(diagnosisCounts),
+                    datasets: [{
+                        data: Object.values(diagnosisCounts),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribution of Diagnoses'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createAgeDistributionChart(data) {
+            const ageRanges = ['50-59', '60-69', '70-79', '80+'];
+            const ageCounts = [0, 0, 0, 0];
+
+            data.forEach(row => {
+                const age = parseFloat(row['Age'] || row['age']);
+                if (age >= 50 && age < 60) ageCounts[0]++;
+                else if (age >= 60 && age < 70) ageCounts[1]++;
+                else if (age >= 70 && age < 80) ageCounts[2]++;
+                else if (age >= 80) ageCounts[3]++;
+            });
+
+            const ctx = document.getElementById('ageDistributionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ageRanges,
+                    datasets: [{
+                        label: 'Number of Patients',
+                        data: ageCounts,
+                        backgroundColor: '#36A2EB'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Age Distribution of Patients'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Patients'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Age Range'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createTreatmentEfficacyChart(data) {
+            const efficacyData = {};
+            data.forEach(patient => {
+                if (patient.Diagnosis && patient.P11) {
+                    if (!efficacyData[patient.Diagnosis]) {
+                        efficacyData[patient.Diagnosis] = [];
+                    }
+                    efficacyData[patient.Diagnosis].push(parseFloat(patient.P11) || 0);
+                }
+            });
+
+            const labels = Object.keys(efficacyData);
+            const datasets = [
+                {
+                    label: 'Average Efficacy',
+                    data: labels.map(diagnosis =>
+                        efficacyData[diagnosis].reduce((a, b) => a + b, 0) / efficacyData[diagnosis].length
+                    ),
+                    backgroundColor: '#36A2EB'
+                },
+                {
+                    label: 'Max Efficacy',
+                    data: labels.map(diagnosis => Math.max(...efficacyData[diagnosis])),
+                    backgroundColor: '#FF6384'
+                },
+                {
+                    label: 'Min Efficacy',
+                    data: labels.map(diagnosis => Math.min(...efficacyData[diagnosis])),
+                    backgroundColor: '#FFCE56'
+                }
+            ];
+
+            const ctx = document.getElementById('treatmentEfficacyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Treatment Efficacy by Diagnosis' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Efficacy' } },
+                        x: { title: { display: true, text: 'Diagnosis' } }
+                    }
+                }
+            });
+        }
+
+        function createLightIntensityChart(data) {
+            const intensityData = {};
+            const validKeys = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'];
+            const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+
+            data.forEach(patient => {
+                if (patient.Diagnosis) {
+                    if (!intensityData[patient.Diagnosis]) {
+                        intensityData[patient.Diagnosis] = { P1: 0, P2: 0, P3: 0, P4: 0, P5: 0, P6: 0, count: 0 };
+                    }
+                    validKeys.forEach(key => {
+                        const value = parseFloat(patient[key]) || 0;
+                        if (value !== 0) {
+                            intensityData[patient.Diagnosis][key] += value;
+                            intensityData[patient.Diagnosis].count++;
+                        }
+                    });
+                }
+            });
+
+            const labels = Object.keys(intensityData);
+            const datasets = validKeys.map((key, index) => ({
+                label: key,
+                data: labels.map(diagnosis =>
+                    intensityData[diagnosis].count > 0
+                        ? intensityData[diagnosis][key] / intensityData[diagnosis].count
+                        : 0
+                ),
+                borderColor: colors[index],
+                backgroundColor: colors[index],
+                fill: false
+            }));
+
+            const ctx = document.getElementById('lightIntensityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Average Light Intensity by Diagnosis' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Average Intensity' } },
+                        x: { title: { display: true, text: 'Diagnosis' } }
+                    }
+                }
+            });
+        }
+
+        function createCorrelationChart(data) {
+            const ctx = document.getElementById('correlationChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: Object.keys(data.reduce((acc, patient) => {
+                        if (patient.Diagnosis) {
+                            acc[patient.Diagnosis] = true;
+                        }
+                        return acc;
+                    }, {})).map((diagnosis, index) => ({
+                        label: diagnosis,
+                        data: data.filter(patient => patient.Diagnosis === diagnosis).map(patient => ({
+                            x: parseFloat(patient.Age) || 0,
+                            y: parseFloat(patient.P11) || 0
+                        })).filter(point => point.x > 0 && point.y > 0),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'][index % 5]
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Age vs Treatment Efficacy' }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Age' } },
+                        y: { title: { display: true, text: 'Treatment Efficacy' } }
+                    }
+                }
+            });
+        }
+
+        function correlationCoefficient(x, y) {
+            const n = x.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+            for (let i = 0; i < n; i++) {
+                sumX += x[i];
+                sumY += y[i];
+                sumXY += x[i] * y[i];
+                sumX2 += x[i] * x[i];
+                sumY2 += y[i] * y[i];
+            }
+            const numerator = n * sumXY - sumX * sumY;
+            const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+            return denominator === 0 ? 0 : numerator / denominator;
+        }
+
+        function createCorrelationMatrix(data) {
+            const numericKeys = ['Age', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P11'];
+            const correlationData = [];
+
+            for (let i = 0; i < numericKeys.length; i++) {
+                for (let j = 0; j < numericKeys.length; j++) {
+                    const x = data.map(d => parseFloat(d[numericKeys[i]]) || 0);
+                    const y = data.map(d => parseFloat(d[numericKeys[j]]) || 0);
+                    const correlation = correlationCoefficient(x, y);
+                    correlationData.push({
+                        x: j,
+                        y: i,
+                        r: Math.abs(correlation) * 20, // radius based on correlation value
+                        v: correlation
+                    });
+                }
+            }
+
+            const ctx = document.getElementById('correlationMatrix').getContext('2d');
+            new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Correlation Matrix',
+                        data: correlationData,
+                        backgroundColor(context) {
+                            const value = context.dataset.data[context.dataIndex].v;
+                            return value > 0 ? 'rgba(0, 0, 255, 0.7)' : 'rgba(255, 0, 0, 0.7)';
+                        },
+                        borderColor: 'white',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            ticks: {
+                                callback: (value) => numericKeys[value]
+                            },
+                            title: {
+                                display: true,
+                                text: 'Variables'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                callback: (value) => numericKeys[value]
+                            },
+                            title: {
+                                display: true,
+                                text: 'Variables'
+                            },
+                            reverse: true
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label(context) {
+                                    const v = context.dataset.data[context.dataIndex];
+                                    return [
+                                        `${numericKeys[v.y]} vs ${numericKeys[v.x]}`,
+                                        `Correlation: ${v.v.toFixed(2)}`
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCellValue(event) {
+            const row = parseInt(event.target.dataset.row);
+            const col = parseInt(event.target.dataset.col);
+            const value = event.target.value;
+            sheets[currentSheet][row][col] = value;
+        }
+
+        function onCellFocus(event) {
+            const formulaInput = document.getElementById('formula-input');
+            formulaInput.value = event.target.value;
+        }
+
+        function onCellClick(event) {
+            if (!event.ctrlKey) {
+                clearSelection();
+            }
+            const cell = event.target.parentElement;
+            cell.classList.toggle('selected');
+            const row = parseInt(event.target.dataset.row);
+            const col = parseInt(event.target.dataset.col);
+            selectedCells.push({
+                row,
+                col
+            });
+        }
+
+        function clearSelection() {
+            const cells = document.querySelectorAll('.selected');
+            cells.forEach(cell => cell.classList.remove('selected'));
+            selectedCells = [];
+        }
+
+        function createTab(index) {
+            const newTab = document.createElement('div');
+            newTab.className = 'tab';
+            newTab.innerHTML = `Sheet ${index + 1} <span class="close-tab" onclick="closeTab(event, ${index})">×</span>`;
+            newTab.onclick = (e) => {
+                if (e.target.className !== 'close-tab') {
+                    switchTab(index);
+                }
+            };
+            return newTab;
+        }
+
+        function switchTab(index) {
+            currentSheet = index;
+            if (sheets[currentSheet].isDashboard) {
+                renderDashboard(sheets[currentSheet].data);
+            } else {
+                renderSheet();
+            }
+            renderTabs();
+        }
+
+        function newSheet() {
+            sheets.push(createEmptySheet());
+            renderTabs();
+            switchTab(sheets.length - 1);
+        }
+
+        function closeTab(event, index) {
+            event.stopPropagation();
+            if (sheets.length > 1) {
+                sheets.splice(index, 1);
+                renderTabs();
+                if (currentSheet >= sheets.length) {
+                    currentSheet = sheets.length - 1;
+                }
+                switchTab(currentSheet);
+            } else {
+                alert("Cannot close the last sheet.");
+            }
+        }
+
+        function renderTabs() {
+            const tabsContainer = document.getElementById('tabs-container');
+            tabsContainer.innerHTML = '';
+            sheets.forEach((sheet, index) => {
+                const tab = createTab(index);
+                if (index === currentSheet) {
+                    tab.classList.add('active');
+                }
+                tabsContainer.appendChild(tab);
+            });
+        }
+
+        function navigateTab(direction) {
+            let newIndex = currentSheet + direction;
+            if (newIndex < 0) {
+                newIndex = sheets.length - 1;
+            } else if (newIndex >= sheets.length) {
+                newIndex = 0;
+            }
+            switchTab(newIndex);
+        }
+
+        function newTabAtCurrent() {
+            const newSheet = createEmptySheet();
+            sheets.splice(currentSheet + 1, 0, newSheet);
+            renderTabs();
+            switchTab(currentSheet + 1);
+        }
+
+        function openExternalData() {
+            document.getElementById('fileInput').click();
+        }
+
+        function enterCsvUrl() {
+            const url = prompt("Enter CSV file URL:");
+            if (url) {
+                fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`)
+                    .then(response => response.text())
+                    .then(data => {
+                        loadCSV(data);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching CSV:', error);
+                        alert('Failed to fetch CSV. Please check the URL and try again.');
+                    });
+            }
+        }
+
+        function showRecentFiles() {
+            alert('Showing recent files (this is a placeholder)');
+        }
+
+        document.getElementById('fileInput').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    loadCSV(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function loadCSV(data) {
+            const rows = data.split('\n').map(row => row.split(','));
+            sheets = [{
+                    isDashboard: true,
+                    data: data
+                },
+                rows.map(row => row.map(cell => cell.trim()))
+            ];
+            renderTabs();
+            switchTab(0); // Open the dashboard first
+        }
+
+        function saveLocal() {
+            alert('Data is saved.');
+        }
+
+        function saveAsCSV() {
+            if (sheets.length === 0) {
+                alert('No data available to save.');
+                return;
+            }
+
+            const currentSheetData = sheets[currentSheet];
+            let csvContent = '';
+            currentSheetData.forEach(row => {
+                csvContent += row.join(',') + '\n';
+            });
+
+            const blob = new Blob([csvContent], {
+                type: 'text/csv;charset=utf-8;'
+            });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'sheet.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                alert('Your browser does not support downloading files.');
+            }
+        }
+
+        function printData() {
+            const printWindow = window.open('', '', 'width=800,height=600');
+            const spreadsheetContent = document.getElementById('spreadsheet').innerHTML;
+
+            printWindow.document.open();
+            printWindow.document.write('<html><head><title>Print</title>');
+            printWindow.document.write(
+                '<style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; } td, th { border: 1px solid #ddd; padding: 8px; } th { background-color: #f2f2f2; }</style>'
+            );
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(spreadsheetContent);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+
+        function closeCurrentTab() {
+            closeTab(new Event('click'), currentSheet);
+        }
+
+        function logout() {
+            if (window.top === window.self) {
+                // If not in an iframe, reload normally
+                window.location.href = 'https://rwhetsel-quantum-eye-test.site.builderall.net/#';
+            } else {
+                // If in an iframe, don't double the iframe on reload
+                window.parent.location.href = 'https://rwhetsel-quantum-eye-test.site.builderall.net/#';
+            }
+        }
+
+        function exitApplication() {
+            if (confirm("Are you sure you want to exit? This will log you out and clear browser cache.")) {
+                clearBrowserCache();
+                logout();
+            }
+        }
+
+        function clearBrowserCache() {
+            if (window.caches) {
+                caches.keys().then(function (names) {
+                    for (let name of names) caches.delete(name);
+                });
+            }
+            localStorage.clear();
+            sessionStorage.clear();
+        }
+
+        function cutSelectedCells() {
+            copySelectedCells();
+            clearSelectedCells();
+        }
+
+        function copySelectedCells() {
+            clipboard = selectedCells.map(({
+                row,
+                col
+            }) => ({
+                value: sheets[currentSheet][row][col],
+                row,
+                col
+            }));
+        }
+
+        function pasteToSelectedCell() {
+            if (!clipboard || clipboard.length === 0) return;
+            const targetCell = selectedCells[0];
+            if (!targetCell) return;
+
+            clipboard.forEach(({
+                value,
+                row: srcRow,
+                col: srcCol
+            }) => {
+                const targetRow = targetCell.row + (srcRow - clipboard[0].row);
+                const targetCol = targetCell.col + (srcCol - clipboard[0].col);
+                if (targetRow < ROWS && targetCol < COLS) {
+                    sheets[currentSheet][targetRow][targetCol] = value;
+                }
+            });
+            renderSheet();
+        }
+
+        function clearSelectedCells() {
+            selectedCells.forEach(({
+                row,
+                col
+            }) => {
+                sheets[currentSheet][row][col] = '';
+            });
+            renderSheet();
+        }
+
+        function toggleFormulaBar() {
+            const formulaBar = document.getElementById('formula-bar');
+            formulaBar.style.display = formulaBar.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleGridlines() {
+            const table = document.querySelector('#spreadsheet table');
+            table.style.borderCollapse = table.style.borderCollapse === 'separate' ? 'collapse' : 'separate';
+        }
+
+        function insertRow() {
+            const newRow = Array(COLS).fill('');
+            sheets[currentSheet].splice(selectedCells[0].row, 0, newRow);
+            sheets[currentSheet].pop();
+            renderSheet();
+        }
+
+        function insertColumn() {
+            sheets[currentSheet].forEach(row => {
+                row.splice(selectedCells[0].col, 0, '');
+                row.pop();
+            });
+            renderSheet();
+        }
+
+        function insertFunction() {
+            const dropdown = document.getElementById('function-dropdown');
+            const formulaInput = document.getElementById('formula-input');
+            const selectedFunction = dropdown.value;
+            if (selectedFunction) {
+                formulaInput.value += `=${selectedFunction}()`;
+                dropdown.value = '';
+            }
+        }
+
+        function evaluateFormula(formula, row, col) {
+            formula = formula.substring(1);
+            formula = formula.replace(/[A-Z]+[0-9]+/g, (match) => {
+                const colIndex = match.charCodeAt(0) - 65;
+                const rowIndex = parseInt(match.substring(1)) - 1;
+                return sheets[currentSheet][rowIndex][colIndex] || '0';
+            });
+
+            try {
+                return eval(formula);
+            } catch (error) {
+                console.error('Formula evaluation error:', error);
+                return '#ERROR';
+            }
+        }
+
+        function reloadIframe() {
+            if (window.top === window.self) {
+                // If not in an iframe, reload normally
+                window.location.reload();
+            } else {
+                // If in an iframe, reload parent
+                window.parent.location.reload();
+            }
+        }
+
+        function forceReloadIframe() {
+            if (window.top === window.self) {
+                window.location.reload(true);
+            } else {
+                window.parent.location.reload(true);
+            }
+        }
+
+        function fitIframe() {
+            if (window.parent !== window) {
+                const iframe = window.frameElement;
+                if (iframe) {
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100vh';
+                }
+            }
+        }
+
+        function zoomInIframe() {
+            zoomLevel *= 1.1;
+            applyZoom();
+        }
+
+        function zoomOutIframe() {
+            zoomLevel /= 1.1;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            document.body.style.transform = `scale(${zoomLevel})`;
+            document.body.style.transformOrigin = 'top left';
+        }
+
+        function toggleFullScreenIframe() {
+            if (!document.fullscreenElement) {
+                if (window.parent !== window) {
+                    const iframe = window.frameElement;
+                    if (iframe && iframe.requestFullscreen) {
+                        iframe.requestFullscreen();
+                    }
+                } else {
+                    document.documentElement.requestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function addRowsOrColumns(type, amount) {
+            if (type === 'row') {
+                ROWS += amount;
+                sheets[currentSheet] = sheets[currentSheet].concat(Array.from({
+                    length: amount
+                }, () => Array(COLS).fill('')));
+            } else if (type === 'column') {
+                COLS += amount;
+                sheets[currentSheet].forEach(row => row.push(...Array(amount).fill('')));
+            }
+            renderSheet();
+        }
+
+        // Initialize the spreadsheet
+        renderTabs();
+        newSheet(); // Create the first sheet for the spreadsheet
+
+        // Event listener for formula input
+        document.getElementById('formula-input').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                const formula = event.target.value;
+                const selectedCell = document.querySelector('.selected input');
+                if (selectedCell) {
+                    selectedCell.value = formula;
+                    const event = new Event('input', {
+                        bubbles: true
+                    });
+                    selectedCell.dispatchEvent(event);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

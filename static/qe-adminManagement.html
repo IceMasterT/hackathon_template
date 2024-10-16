@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Panel</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-timeline@7.7.3/dist/vis-timeline-graph2d.min.css">
+    <style>
+        /* Basic page styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        /* Tabs container styling */
+        #tabs {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        /* Form styling */
+        form {
+            margin-bottom: 20px;
+        }
+        input, select, button, textarea {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        /* Status color coding */
+        .status-ready { background-color: purple; color: white; }
+        .status-in-progress { background-color: blue; color: white; }
+        .status-delayed { background-color: yellow; color: black; }
+        .status-blocked { background-color: red; color: white; }
+        /* Timeline styling */
+        #timeline {
+            width: 100%;
+            height: 400px;
+        }
+        /* Workload section styling */
+        #workload {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        #timeline {
+            margin-bottom: 0;
+        }
+        #workload-table {
+            margin-top: 0;
+        }
+        /* Survey form styling */
+        #survey-form {
+            margin-top: 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #survey-form input, #survey-form select, #survey-form textarea {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        /* Welcome message and volunteer instructions form styling */
+        #welcome-message-form, #volunteer-instructions-form {
+            margin-top: 20px;
+        }
+        .question-options {
+            margin-left: 20px;
+        }
+        /* Heading styling */
+        h2 {
+            margin-bottom: 10px;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main tabs container -->
+    <div id="tabs">
+        <ul>
+            <li><a href="#personnel-management">Personnel Management</a></li>
+            <li><a href="#teams">Teams</a></li>
+            <li><a href="#workspaces">Workspaces</a></li>
+            <li><a href="#workload">Workload & Creation</a></li>
+        </ul>
+
+        <div id="personnel-management">
+            <h2>Add New Person</h2>
+            <form id="add-person-form">
+                <input type="text" id="first-name" placeholder="First Name" required>
+                <input type="text" id="last-name" placeholder="Last Name" required>
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="tel" id="phone" placeholder="Phone" required>
+                <select id="role" required>
+                    <option value="">Select Role</option>
+                    <option value="Volunteer">Volunteer</option>
+                    <option value="Data Scientist">Data Scientist</option>
+                    <option value="Researcher">Researcher</option>
+                </select>
+                <button type="submit">Add Person</button>
+            </form>
+
+            <h2>Personnel List</h2>
+            <table id="personnel-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Assigned</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Team</th>
+                        <th>Workspace</th>
+                    </tr>
+                </thead>
+                <tbody id="personnel-list"></tbody>
+            </table>
+        </div>
+
+        <div id="teams">
+            <h2>Add New Team</h2>
+            <form id="add-team-form">
+                <input type="text" id="team-name" placeholder="Team Name" required>
+                <button type="submit">Add Team</button>
+            </form>
+
+            <h2>Teams List</h2>
+            <table id="teams-table">
+                <thead>
+                    <tr>
+                        <th>Team Name</th>
+                        <th>Assigned Personnel</th>
+                        <th>Assigned</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Workspace</th>
+                    </tr>
+                </thead>
+                <tbody id="teams-list"></tbody>
+            </table>
+        </div>
+
+        <div id="workspaces">
+            <h2>Add New Workspace</h2>
+            <form id="add-workspace-form">
+                <input type="text" id="workspace-name" placeholder="Workspace Name" required>
+                <button type="submit">Add Workspace</button>
+            </form>
+
+            <h2>Workspaces List</h2>
+            <table id="workspaces-table">
+                <thead>
+                    <tr>
+                        <th>Workspace Name</th>
+                        <th>Assigned Teams</th>
+                        <th>Assigned</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="workspaces-list"></tbody>
+            </table>
+        </div>
+
+        <div id="workload">
+            <h2>Workload & Creation</h2>
+            <form id="add-task-form">
+                <input type="text" id="task-name" placeholder="Task Name" required>
+                <input type="datetime-local" id="task-due-date" required>
+                <select id="task-priority" required>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+                <button type="submit">Add Task</button>
+            </form>
+
+            <div id="timeline"></div>
+
+            <table id="workload-table">
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Priority</th>
+                        <th>Assigned To</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Team</th>
+                        <th>Workspace</th>
+                    </tr>
+                </thead>
+                <tbody id="workload-list"></tbody>
+            </table>
+
+            <h2>Create Survey</h2>
+            <form id="survey-form">
+                <input type="text" id="survey-name" placeholder="Survey Name" required>
+                <textarea id="survey-description" placeholder="Survey Description" required></textarea>
+                <select id="survey-target" required>
+                    <option value="">Select Target</option>
+                    <option value="all">All Users</option>
+                    <option value="workspace">Specific Workspace</option>
+                    <option value="team">Specific Team</option>
+                    <option value="individual">Specific Individual</option>
+                </select>
+                <select id="survey-target-specific" style="display: none;"></select>
+                <input type="datetime-local" id="survey-due-date" required>
+                <div id="survey-questions"></div>
+                <button type="button" id="add-question">Add Question</button>
+                <button type="submit">Create Survey</button>
+            </form>
+
+            <h2>Set Welcome Message</h2>
+            <form id="welcome-message-form">
+                <textarea id="welcome-message" placeholder="Enter welcome message for volunteers" required></textarea>
+                <button type="submit">Set Welcome Message</button>
+            </form>
+
+            <h2>Set Volunteer Instructions</h2>
+            <form id="volunteer-instructions-form">
+                <textarea id="volunteer-instructions" placeholder="Enter instructions for volunteers" required></textarea>
+                <button type="submit">Set Volunteer Instructions</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.0/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vis-timeline@7.7.3/dist/vis-timeline-graph2d.min.js"></script>
+    <script src="../js/admin-management.js"></script>
+</body>
+</html>
