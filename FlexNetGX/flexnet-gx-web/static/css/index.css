@@ -1,0 +1,218 @@
+/* index.css */
+
+:root {
+    --primary-bg: #262626;
+    --secondary-bg: #252525;
+    --tertiary-bg: #242424;
+    --primary-color: #fff;
+    --accent-color: #7289da;
+    --accent-hover: #5b6eae;
+    --error-color: #ff6b6b;
+    --border-color: #444;
+}
+
+html {
+    background-color: var(--primary-bg);
+}
+
+body, html {
+    font-family: Arial, sans-serif;
+    color: var(--primary-color);
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--primary-bg);
+}
+
+.login-container {
+    background-color: var(--secondary-bg);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+h2 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--tertiary-bg);
+    color: var(--primary-color);
+}
+
+button {
+    width: 100%;
+    padding: 0.5rem;
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: var(--accent-hover);
+}
+
+.error-message {
+    color: var(--error-color);
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.additional-options {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.additional-options button {
+    width: 48%;
+}
+
+#settingsBtn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto;
+    background-color: var(--tertiary-bg);
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.settings-wrapper {
+    background-color: var(--secondary-bg);
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+}
+
+.settings-container {
+    border: 2px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.setting-label {
+    color: var(--primary-color);
+}
+
+.dropdown, .toggle {
+    background-color: var(--tertiary-bg);
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.button-container button {
+    width: 30%;
+}
+
+#saveButton {
+    background-color: #28a745;
+}
+
+#backButton {
+    background-color: #6c757d;
+}
+
+#cancelButton {
+    background-color: #dc3545;
+}
+
+#timeOverlay {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: move;
+    user-select: none;
+    z-index: 1000;
+}
+
+/* Night mode styles */
+body.night-mode {
+    background-color: #333;
+}
+
+body.night-mode .login-container,
+body.night-mode .settings-wrapper {
+    background-color: #444;
+}
+
+body.night-mode .settings-container {
+    border-color: var(--accent-color);
+}
+
+body.night-mode .dropdown,
+body.night-mode .toggle {
+    background-color: #555;
+    color: #fff;
+    border-color: #777;
+}
+
+@media (max-height: 600px) {
+    body {
+        align-items: flex-start;
+    }
+
+    .login-container {
+        margin-top: 1rem;
+    }
+}

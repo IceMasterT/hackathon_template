@@ -1,0 +1,201 @@
+/* Reset default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body styles */
+.iframe-body {
+    font-family: Arial, sans-serif;
+    background-color: #1c1c1c;
+    color: white;
+    line-height: 1.6;
+    overflow-x: hidden;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Welcome header styles */
+.welcome-header {
+    background-color: #333;
+    padding: 20px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.welcome-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Container styles */
+.container {
+    max-width: 100%;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+/* Tabs styles */
+#tabs {
+    background-color: #2a2a2a;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.ui-tabs .ui-tabs-nav {
+    background-color: #333;
+    border: none;
+    border-radius: 0;
+    padding: 10px 10px 0;
+}
+
+.ui-tabs .ui-tabs-nav li {
+    background-color: #444;
+    border: none;
+    border-radius: 5px 5px 0 0;
+    margin-right: 5px;
+}
+
+.ui-tabs .ui-tabs-nav li a {
+    color: white;
+    padding: 10px 15px;
+}
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active {
+    background-color: #8250A0;
+}
+
+.ui-tabs .ui-tabs-panel {
+    background-color: #2a2a2a;
+    color: white;
+    border: none;
+    padding: 20px;
+}
+
+/* Content styles */
+.message, .feedback-item, .survey-item, .approval-item {
+    background-color: #333;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.message h3, .feedback-item h3, .survey-item h3, .approval-item h3 {
+    color: #8250A0;
+    margin-bottom: 10px;
+}
+
+/* Button styles */
+.help-button {
+    background-color: #8250A0;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.help-button:hover {
+    background-color: #9473A6;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .ui-tabs .ui-tabs-nav li a {
+        padding: 8px 12px;
+    }
+}
+
+/* Tabs styles */
+#tabs {
+    background-color: #2a2a2a;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.ui-tabs .ui-tabs-nav {
+    background-color: #333;
+    border: none;
+    border-radius: 0;
+    padding: 10px 10px 0;
+    display: flex;  /* Add this */
+    flex-wrap: wrap;  /* Add this */
+}
+
+.ui-tabs .ui-tabs-nav li {
+    background-color: #444;
+    border: none;
+    border-radius: 5px 5px 0 0;
+    margin-right: 5px;
+    margin-bottom: 5px;  /* Add this */
+    flex-grow: 1;  /* Add this */
+    text-align: center;  /* Add this */
+}
+
+.ui-tabs .ui-tabs-nav li a {
+    color: white;
+    padding: 10px 15px;
+    display: block;  /* Add this */
+    width: 100%;  /* Add this */
+}
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active {
+    background-color: #8250A0;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+    .ui-tabs .ui-tabs-nav {
+        flex-direction: column;  /* Add this */
+    }
+
+    .ui-tabs .ui-tabs-nav li {
+        margin-right: 0;  /* Add this */
+        margin-bottom: 5px;  /* Add this */
+    }
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1c1c1c;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Dashboard item styles */
+.dashboard-item {
+    width: calc(100% - 20px);
+    margin-bottom: 10px;
+    background-color: #333;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+@media (min-width: 768px) {
+    .dashboard-item {
+        width: calc(50% - 10px);
+        display: inline-block;
+        vertical-align: top;
+    }
+}
+}

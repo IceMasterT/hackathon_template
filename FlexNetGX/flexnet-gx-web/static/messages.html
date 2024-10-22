@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages & Help</title>
+    <link rel="stylesheet" href="css/messages.css">
+</head>
+<body>
+    <h1>Messages & Help</h1>
+
+    <h2>Recent Messages</h2>
+    <ul id="messageList">
+        <!-- Messages will be dynamically added here -->
+    </ul>
+
+    <form id="messageForm">
+        <h2>Send a Message</h2>
+        <textarea id="messageContent" rows="4" placeholder="Type your message here"></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+
+    <form id="helpForm">
+        <h2>Request Help</h2>
+        <input type="text" id="helpTopic" placeholder="Topic">
+        <textarea id="helpContent" rows="4" placeholder="Describe your issue"></textarea>
+        <button type="submit">Request Help</button>
+    </form>
+
+    <script src="js/messages.js"></script>
+</body>
+</html>

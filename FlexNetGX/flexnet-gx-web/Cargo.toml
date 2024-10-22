@@ -13,6 +13,8 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
 reqwest = { version = "0.11", features = ["json"] }
+near-sdk = "4.0.0"
+near-api-js = "0.1.0"
 aes-gcm = "0.9"
 sha2 = "0.9"
 hex = "0.4"

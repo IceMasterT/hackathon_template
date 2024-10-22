@@ -1,59 +1,46 @@
-use solana_program::{
-    account_info::AccountInfo,
-    entrypoint,
-    entrypoint::ProgramResult,
-    pubkey::Pubkey,
-    msg,
-};
-use borsh::{BorshDeserialize, BorshSerialize};
-use blake3;
-use sha2::{Sha256, Digest};
-use aes_gcm::{
-    aead::{Aead, KeyInit},
-    Aes256Gcm, Nonce
-};
-use hex;
+use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::collections::{UnorderedMap, UnorderedSet};
+use near_sdk::{env, near_bindgen, AccountId, PanicOnDefault};
 
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
-pub struct KeyData {
-    pub owner: Pubkey,
-    pub key: [u8; 32],
+#[near_bindgen]
+#[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
+pub struct FlexNetGX {
+    users: UnorderedMap<AccountId, User>,
+    teams: UnorderedMap<String, Team>,
+    workspaces: UnorderedMap<String, Workspace>,
+    surveys: UnorderedMap<String, Survey>,
 }
 
-entrypoint!(process_instruction);
+#[near_bindgen]
+impl FlexNetGX {
+    #[init]
+    pub fn new() -> Self {
+        Self {
+            users: UnorderedMap::new(b"u"),
+            teams: UnorderedMap::new(b"t"),
+            workspaces: UnorderedMap::new(b"w"),
+            surveys: UnorderedMap::new(b"s"),
+        }
+    }
 
-pub fn process_instruction(
-    _program_id: &Pubkey,
-    _accounts: &[AccountInfo],
-    _instruction_data: &[u8],
-) -> ProgramResult {
-    msg!("FlexNet GX Blockchain program entrypoint");
-    
-    // Example usage of data processing
-    let example_data = "Hello, blockchain!";
-    let (encrypted_data, blake3_hash, sha256_hash) = process_data_for_blockchain(example_data);
+    // User management
+    pub fn register_user(&mut self, account_id: AccountId) {
+        assert!(!self.users.contains_key(&account_id), "User already exists");
+        // Implementation details...
+    }
 
-    // Logging to Solana's output
-    msg!("Encrypted Data: {}", encrypted_data);
-    msg!("BLAKE3 Hash: {}", blake3_hash);
-    msg!("SHA256 Hash: {}", sha256_hash);
-    
-    Ok(())
-}
+    // Team management
+    pub fn create_team(&mut self, name: String) {
+        // Implementation details...
+    }
 
-// Process data function
-pub fn process_data_for_blockchain(data: &str) -> (String, String, String) {
-    let key = Aes256Gcm::generate_key(&mut rand::thread_rng());
-    let cipher = Aes256Gcm::new(&key);
-    let nonce = Nonce::from_slice(b"unique nonce"); // 12-bytes
-    let encrypted = cipher.encrypt(nonce, data.as_bytes()).expect("encryption failure!");
-    let encrypted_data = hex::encode(&encrypted);
+    // Workspace management
+    pub fn create_workspace(&mut self, name: String) {
+        // Implementation details...
+    }
 
-    // Hash encrypted data
-    let blake3_hash = blake3::hash(encrypted_data.as_bytes());
-    let mut sha256_hasher = Sha256::new();
-    sha256_hasher.update(&encrypted_data);
-    let sha256_hash = sha256_hasher.finalize();
-
-    (encrypted_data, hex::encode(blake3_hash.as_bytes()), hex::encode(sha256_hash))
+    // Survey management
+    pub fn create_survey(&mut self, name: String) {
+        // Implementation details...
+    }
 }

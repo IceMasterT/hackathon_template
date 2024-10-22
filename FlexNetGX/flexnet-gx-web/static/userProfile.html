@@ -1,0 +1,39 @@
+<div class="profile-card">
+    <div class="profile-picture">
+        <img src="https://via.placeholder.com/120" alt="Profile Picture" id="profileImg">
+        <label for="upload" class="upload-button">Upload</label>
+        <input type="file" id="upload" accept="image/*">
+        <link rel="stylesheet" href="css/userProfile.css">
+    </div>
+    <div class="profile-details">
+        <div class="column">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" placeholder="First Name" readonly>
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Username" readonly>
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Email" readonly>
+        </div>
+        <div class="column">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" placeholder="Last Name" readonly>
+            <label for="cellPhone">Cell Phone</label>
+            <input type="text" id="cellPhone" placeholder="Cell Phone" readonly>
+            <label for="role">Role</label>
+            <select id="role" disabled>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
+                <option value="guest">Guest</option>
+            </select>
+        </div>
+    </div>
+    <div class="button-container">
+        <button id="editBtn">Edit</button>
+        <button id="saveBtn" style="display: none;">Save</button>
+        <button id="logoutBtn">Logout of all devices</button>
+        <button id="deleteBtn">Delete My Account</button>
+        <button class="back-button" id="backBtn">Back</button>
+    </div>
+    <script src="js/userProfile.js"></script>
+    <script src="https://visjs.github.io/vis-timeline/standalone/umd/vis-timeline-graph2d.min.js"></script>
+</div>

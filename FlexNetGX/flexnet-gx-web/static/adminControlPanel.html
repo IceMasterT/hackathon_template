@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Panel</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-timeline@7.5.1/dist/vis-timeline-graph2d.min.css">
+    <link rel="stylesheet" href="css/adminControlPanel.css">
+</head>
+<body>
+    <div id="tabs">
+        <ul>
+            <li><a href="#personnel">Personnel Management</a></li>
+            <li><a href="#teams">Teams</a></li>
+            <li><a href="#workspaces">Workspaces</a></li>
+            <li><a href="#tasks">Tasks & Timeline</a></li>
+            <li><a href="#surveys">Surveys</a></li>
+            <li><a href="#messages">Messages & Instructions</a></li>
+            <li><a href="#reports">Reports</a></li>
+            <li><a href="#notifications">Notifications</a></li>
+            <li><a href="#feedback">Feedback</a></li>
+        </ul>
+
+        <div id="personnel">
+            <h2>Personnel Management</h2>
+            <div id="pending-users">
+                <h3>Pending Users</h3>
+                <button id="refresh-pending-users">Refresh Pending Users</button>
+                <table id="pending-users-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-users-list"></tbody>
+                </table>
+            </div>
+
+            <div id="assigned-personnel">
+                <h3>Assigned Personnel</h3>
+                <table id="assigned-personnel-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Team</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assigned-personnel-list"></tbody>
+                </table>
+            </div>
+
+            <h3>Add New Personnel</h3>
+            <form id="add-person-form">
+                <input type="text" id="first-name" placeholder="First Name" required>
+                <input type="text" id="last-name" placeholder="Last Name" required>
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="tel" id="phone" placeholder="Phone" required>
+                <select id="role" required>
+                    <option value="">Select Role</option>
+                    <option value="Volunteer">Volunteer</option>
+                    <option value="Research">Research</option>
+                    <option value="Admin">Admin</option>
+                </select>
+                <button type="submit">Add Person</button>
+            </form>
+        </div>
+
+        <div id="teams">
+            <h2>Team Management</h2>
+            <h3>Add New Team</h3>
+            <form id="add-team-form">
+                <input type="text" id="team-name" placeholder="Team Name" required>
+                <button type="submit">Add Team</button>
+            </form>
+
+            <h3>Teams List</h3>
+            <table id="teams-table">
+                <thead>
+                    <tr>
+                        <th>Team Name</th>
+                        <th>Assigned Personnel</th>
+                        <th>Assigned Workspace</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="teams-list"></tbody>
+            </table>
+        </div>
+
+        <div id="workspaces">
+            <h2>Workspace Management</h2>
+            <h3>Add New Workspace</h3>
+            <form id="add-workspace-form">
+                <input type="text" id="workspace-name" placeholder="Workspace Name" required>
+                <button type="submit">Add Workspace</button>
+            </form>
+
+            <h3>Workspaces List</h3>
+            <table id="workspaces-table">
+                <thead>
+                    <tr>
+                        <th>Workspace Name</th>
+                        <th>Assigned Teams</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="workspaces-list"></tbody>
+            </table>
+        </div>
+
+        <div id="tasks">
+            <h2>Tasks & Timeline</h2>
+            <h3>Add New Task</h3>
+            <form id="add-task-form">
+                <input type="text" id="task-name" placeholder="Task Name" required>
+                <input type="datetime-local" id="task-due-date" required>
+                <select id="task-priority" required>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+                <select id="task-assigned-to" required>
+                    <option value="">Assign To</option>
+                </select>
+                <select id="task-team" required>
+                    <option value="">Assign Team</option>
+                </select>
+                <select id="task-workspace" required>
+                    <option value="">Assign Workspace</option>
+                </select>
+                <button type="submit">Add Task</button>
+            </form>
+
+            <h3>Timeline</h3>
+            <div id="timeline"></div>
+
+            <h3>Task List</h3>
+            <table id="task-table">
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Priority</th>
+                        <th>Assigned To</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Team</th>
+                        <th>Workspace</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="task-list"></tbody>
+            </table>
+        </div>
+
+        <div id="surveys">
+            <h2>Surveys</h2>
+            <h3>Create New Survey</h3>
+            <form id="survey-form">
+                <input type="text" id="survey-name" placeholder="Survey Name" required>
+                <textarea id="survey-description" placeholder="Survey Description" required></textarea>
+                <select id="survey-target" required>
+                    <option value="">Select Target</option>
+                    <option value="all">All Users</option>
+                    <option value="workspace">Specific Workspace</option>
+                    <option value="team">Specific Team</option>
+                    <option value="individual">Specific Individual</option>
+                </select>
+                <select id="survey-target-specific" style="display: none;"></select>
+                <input type="datetime-local" id="survey-due-date" required>
+                <div id="survey-questions"></div>
+                <button type="button" id="add-question">Add Question</button>
+                <button type="submit">Create Survey</button>
+            </form>
+
+            <h3>Existing Surveys</h3>
+            <table id="surveys-table">
+                <thead>
+                    <tr>
+                        <th>Survey Name</th>
+                        <th>Target</th>
+                        <th>Due Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="surveys-list"></tbody>
+            </table>
+        </div>
+
+        <div id="messages">
+            <h2>Messages & Instructions</h2>
+            <h3>Set Welcome Message</h3>
+            <form id="welcome-message-form">
+                <textarea id="welcome-message" placeholder="Enter welcome message for volunteers" required></textarea>
+                <button type="submit">Set Welcome Message</button>
+            </form>
+
+            <h3>Set Volunteer Instructions</h3>
+            <form id="volunteer-instructions-form">
+                <textarea id="volunteer-instructions" placeholder="Enter instructions for volunteers" required></textarea>
+                <button type="submit">Set Volunteer Instructions</button>
+            </form>
+        </div>
+
+        <div id="reports">
+            <h2>Reports</h2>
+            <button id="generatePersonnelReport">Generate & Export Personnel Report</button>
+            <button id="generateTeamsReport">Generate & Export Teams Report</button>
+            <button id="generateWorkspacesReport">Generate & Export Workspaces Report</button>
+            <button id="generateTasksReport">Generate & Export Tasks Report</button>
+        </div>
+
+        <div id="notifications">
+            <h2>Send Notification</h2>
+            <form id="notificationForm">
+                <textarea id="notificationMessage" placeholder="Enter notification message" required></textarea>
+                <select id="notificationTarget" required>
+                    <option value="">Select Target</option>
+                    <option value="all">All Users</option>
+                    <option value="workspace">Specific Workspace</option>
+                    <option value="team">Specific Team</option>
+                    <option value="individual">Specific Individual</option>
+                </select>
+                <select id="notificationTargetSpecific" style="display: none;"></select>
+                <button type="submit">Send Notification</button>
+            </form>
+        </div>
+
+        <div id="feedback">
+            <h2>Feedback</h2>
+            <form id="feedbackForm">
+                <textarea id="feedbackText" placeholder="Enter your feedback" required></textarea>
+                <button type="submit">Submit Feedback</button>
+            </form>
+            <h3>Feedback Received</h3>
+            <div id="feedbackDisplay"></div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vis-timeline@7.5.1/dist/vis-timeline-graph2d.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="js/adminControlPanel.js"></script>
+</body>
+</html>
