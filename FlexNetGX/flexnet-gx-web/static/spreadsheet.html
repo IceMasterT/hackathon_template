@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spreadsheet Application</title>
+    <link rel="stylesheet" href="spreadsheet.css">
+</head>
+<body>
+    <div id="menu-bar">
+        <div class="menu-item">
+            File
+            <div class="dropdown-content">
+                <a href="#" id="new-sheet">New</a>
+                <div class="submenu">
+                    <a href="#" id="open-submenu">Open</a>
+                    <div class="submenu-content">
+                        <a href="#" id="open-recent">Recent</a>
+                        <a href="#" id="open-local">Local</a>
+                        <a href="#" id="open-database">Database</a>
+                        <a href="#" id="open-url">URL</a>
+                    </div>
+                </div>
+                <a href="#" id="save-local">Save</a>
+                <a href="#" id="save-as-csv">Save As CSV</a>
+                <a href="#" id="print-spreadsheet">Print</a>
+                <a href="#" id="close-current-tab">Close</a>
+                <a href="#" id="logout">Logout</a>
+                <a href="#" id="exit-application">Exit</a>
+            </div>
+        </div>
+        <div class="menu-item">
+            Edit
+            <div class="dropdown-content">
+                <a href="#" id="cut">Cut</a>
+                <a href="#" id="copy">Copy</a>
+                <a href="#" id="paste">Paste</a>
+                <a href="#" id="undo">Undo</a>
+                <a href="#" id="redo">Redo</a>
+            </div>
+        </div>
+        <div class="menu-item">
+            View
+            <div class="dropdown-content">
+                <a href="#" id="zoom-in">Zoom In</a>
+                <a href="#" id="zoom-out">Zoom Out</a>
+                <a href="#" id="toggle-formula-bar">Toggle Formula Bar</a>
+                <a href="#" id="toggle-gridlines">Toggle Gridlines</a>
+            </div>
+        </div>
+        <div class="menu-item">
+            Insert
+            <div class="dropdown-content">
+                <a href="#" id="insert-row">Insert Row</a>
+                <a href="#" id="insert-column">Insert Column</a>
+                <a href="#" id="insert-chart">Insert Chart</a>
+            </div>
+        </div>
+        <div class="menu-item">
+            Format
+            <div class="dropdown-content">
+                <a href="#" id="format-bold">Bold</a>
+                <a href="#" id="format-italic">Italic</a>
+                <a href="#" id="format-underline">Underline</a>
+                <a href="#" id="format-cell">Format Cell</a>
+            </div>
+        </div>
+        <div class="menu-item">
+            Data
+            <div class="dropdown-content">
+                <a href="#" id="sort-ascending">Sort Ascending</a>
+                <a href="#" id="sort-descending">Sort Descending</a>
+                <a href="#" id="filter-data">Filter</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="toolbar">
+        <button id="new-sheet-btn">New Sheet</button>
+        <button id="delete-sheet-btn">Delete Sheet</button>
+        <input type="text" id="cell-input" placeholder="Enter cell value">
+        <select id="function-select">
+            <option value="">Select Function</option>
+            <option value="SUM">SUM</option>
+            <option value="AVERAGE">AVERAGE</option>
+            <option value="COUNT">COUNT</option>
+            <option value="MAX">MAX</option>
+            <option value="MIN">MIN</option>
+        </select>
+    </div>
+
+    <div id="spreadsheet-container">
+        <div id="sheet-tabs"></div>
+        <div id="spreadsheet"></div>
+    </div>
+
+    <div id="status-bar">
+        <span id="selected-cell"></span>
+        <span id="calculation-status"></span>
+    </div>
+
+    <div id="context-menu" class="context-menu">
+        <ul>
+            <li id="context-cut">Cut</li>
+            <li id="context-copy">Copy</li>
+            <li id="context-paste">Paste</li>
+            <li id="context-insert-row">Insert Row</li>
+            <li id="context-insert-column">Insert Column</li>
+            <li id="context-delete-row">Delete Row</li>
+            <li id="context-delete-column">Delete Column</li>
+        </ul>
+    </div>
+
+    <div id="chart-modal" class="modal">
+        <div class="modal-content">
+            <h2>Create Chart</h2>
+            <select id="chart-type">
+                <option value="bar">Bar Chart</option>
+                <option value="line">Line Chart</option>
+                <option value="pie">Pie Chart</option>
+                <option value="scatter">Scatter Plot</option>
+            </select>
+            <button id="create-chart-btn">Create</button>
+            <button id="close-chart-modal">Close</button>
+        </div>
+    </div>
+
+    <div id="format-cell-modal" class="modal">
+        <div class="modal-content">
+            <h2>Format Cell</h2>
+            <label for="font-family">Font:</label>
+            <select id="font-family">
+                <option value="Arial">Arial</option>
+                <option value="Helvetica">Helvetica</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier">Courier</option>
+            </select>
+            <label for="font-size">Size:</label>
+            <input type="number" id="font-size" min="8" max="72" value="11">
+            <label for="font-color">Color:</label>
+            <input type="color" id="font-color">
+            <label for="background-color">Background:</label>
+            <input type="color" id="background-color">
+            <button id="apply-format">Apply</button>
+            <button id="close-format-modal">Close</button>
+        </div>
+    </div>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/amazon-cognito-identity-js/5.2.10/amazon-cognito-identity.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="spreadsheet.js"></script>
+</body>
+</html>

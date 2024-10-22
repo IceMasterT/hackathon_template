@@ -1,6 +1,1 @@
-# flexnet-gx-web/.gitignore
-
-/dist/
-/target/
-/pkg/
-/node_modules/
+/target

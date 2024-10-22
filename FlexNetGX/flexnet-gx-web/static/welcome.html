@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Dashboard</title>
+    <link rel="stylesheet" href="welcome.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+</head>
+<body class="iframe-body">
+    <div class="welcome-header">
+        <h1>Welcome, <span id="user-name">User</span>!</h1>
+    </div>
+    <div class="container">
+        <div id="tabs">
+            <ul>
+                <li><a href="#messages">Messages</a></li>
+                <li><a href="#feedback">Feedback</a></li>
+                <li><a href="#surveys">Returned Surveys</a></li>
+                <li><a href="#approval">Data Approval</a></li>
+                <li><a href="#help">Help</a></li>
+            </ul>
+            <div id="messages">
+                <h2>Messages</h2>
+                <div class="message-list">
+                    <div class="message">
+                        <h3>New Project Update</h3>
+                        <p>The new project is progressing well. Click to read more...</p>
+                    </div>
+                    <div class="message">
+                        <h3>Meeting Reminder</h3>
+                        <p>Don't forget about the team meeting at 2 PM today.</p>
+                    </div>
+                </div>
+            </div>
+            <div id="feedback">
+                <h2>Feedback</h2>
+                <div class="feedback-list">
+                    <div class="feedback-item">
+                        <h3>Product Review</h3>
+                        <p>Customer satisfaction has increased by 15% this quarter.</p>
+                    </div>
+                </div>
+            </div>
+            <div id="surveys">
+                <h2>Returned Surveys</h2>
+                <div class="survey-list">
+                    <div class="survey-item">
+                        <h3>Employee Satisfaction Survey</h3>
+                        <p>85% completion rate. Click to view results.</p>
+                    </div>
+                </div>
+            </div>
+            <div id="approval">
+                <h2>Data Approval</h2>
+                <div class="approval-list">
+                    <div class="approval-item">
+                        <h3>Q2 Financial Report</h3>
+                        <p>Pending approval. Click to review.</p>
+                    </div>
+                </div>
+            </div>
+            <div id="help">
+                <h2>Help</h2>
+                <div class="help-content">
+                    <h3>Need Assistance?</h3>
+                    <p>Contact our support team at support@quantumeye.com or call 1-800-QUANTUM.</p>
+                    <button class="help-button">Chat with Support</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="welcome.js"></script>
+</body>
+</html>

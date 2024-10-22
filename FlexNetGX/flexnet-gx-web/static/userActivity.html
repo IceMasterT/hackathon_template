@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Activity Monitor</title>
+</head>
+<body>
+    <h2>User Activity Monitor</h2>
+    <p>This frame monitors real-time user activities.</p>
+
+    <script>
+        // Simulated user activity data
+        const userActivities = [
+            { date: '2023-05-04 10:30', user: 'alice_wonder', action: 'Logged In' },
+            { date: '2023-05-04 11:15', user: 'bob_builder', action: 'Updated Profile' },
+            { date: '2023-05-04 12:00', user: 'charlie_chocolate', action: 'Submitted Form' }
+        ];
+
+        // Listen for messages from the parent window
+        window.addEventListener('message', function(event) {
+            // In production, always validate the origin
+            // if (event.origin !== "https://your-main-site.com") return;
+
+            console.log('Received message from parent:', event.data);
+
+            if (event.data === 'Request user activity data') {
+                // Send user activity data to the parent window
+                window.parent.postMessage({
+                    type: 'userActivityUpdate',
+                    activities: userActivities
+                }, '*');
+            }
+        });
+
+        // Simulate periodic updates
+        setInterval(function() {
+            const newActivity = {
+                date: new Date().toLocaleString(),
+                user: 'random_user_' + Math.floor(Math.random() * 100),
+                action: 'Performed Action'
+            };
+            userActivities.push(newActivity);
+
+            // Send update to parent
+            window.parent.postMessage({
+                type: 'userActivityUpdate',
+                activities: userActivities
+            }, '*');
+        }, 5000); // Update every 5 seconds
+    </script>
+</body>
+</html>
