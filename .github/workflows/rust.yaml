@@ -1,12 +1,12 @@
-name: Rust - QE Redacted
+name: Rust - All Branches
 
 on:
   push:
     branches:
-      - "qe_redacted"
+      - "**" # This will match all branches and forks
   pull_request:
     branches:
-      - "qe_redacted"
+      - "**" # PRs across any branches and forks
 
 env:
   CARGO_TERM_COLOR: always
@@ -37,4 +37,3 @@ jobs:
 
       - name: Format code
         run: cargo fmt -- --check
-
