@@ -155,6 +155,7 @@ near-api = "0.2.0"
 aes-gcm = "0.10"
 sha2 = "0.10"
 hex = "0.4"
+getrandom = { version = "0.2", features = ["js"] }
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -198,6 +199,7 @@ near-sdk = "5.5.0"
 aes-gcm = "0.10"
 sha2 = "0.10"
 hex = "0.4"
+getrandom = { version = "0.2", features = ["js"] }
 
 [target.'cfg(target_os = "android")'.dependencies]
 ndk-glue = "0.7"
@@ -250,6 +252,7 @@ near-sdk = "5.5.0"
 aes-gcm = "0.10"
 sha2 = "0.10"
 hex = "0.4"
+getrandom = { version = "0.2", features = ["js"] }
 
 [[bin]]
 name = "bootstrap"
@@ -282,6 +285,7 @@ near-contract-standards = "4.0.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 borsh = "0.9"
+getrandom = { version = "0.2", features = ["js"] }
 
 [profile.release]
 codegen-units = 1
@@ -348,236 +352,227 @@ EOF
     # Create scripts directory if it doesn't exist
     check_and_create_dir "scripts"
 
-    # Create test script
-    cat << 'EOF' > scripts/test.sh
+# Create test script
+cat << 'EOF' > scripts/test.sh
     # UNsterlink Testing Suite
+    # Comprehensive testing script for all components
     #!/bin/bash
 
-# UNsterlink Testing Suite
-# Comprehensive testing script for all components
+    set -e
 
-set -e
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+    # Colors for output
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    BLUE='\033[0;34m'
+    YELLOW='\033[1;33m'
+    NC='\033[0m'
 
 # Test environment configuration
-export NODE_ENV=test
-export NEAR_ENV=testnet
+    export NODE_ENV=test
+    export NEAR_ENV=testnet
 
 # Load environment variables
-if [ ! -f "../.env" ]; then
-    echo -e "${RED}Error: .env file not found in parent directory${NC}"
-    exit 1
-fi
-source ../.env
+    if [ ! -f "../.env" ]; then
+        echo -e "${RED}Error: .env file not found in parent directory${NC}"
+        exit 1
+    fi
+    source ../.env
 
 # Function to run Near Protocol contract tests
-test_near_contract() {
-    echo -e "\n${BLUE}Testing Near Protocol Smart Contract...${NC}"
-    cd ../flexnet-gx-blockchain
+    test_near_contract() {
+        echo -e "\n${BLUE}Testing Near Protocol Smart Contract...${NC}"
+        cd ../flexnet-gx-blockchain
 
-    echo "Running unit tests..."
-    cargo test -- --nocapture
+        echo "Running unit tests..."
+        cargo test -- --nocapture
 
-    echo "Running integration tests..."
-    cargo test --features integration-tests -- --nocapture
+        echo "Running integration tests..."
+        cargo test --features integration-tests -- --nocapture
 
-    # Deploy to testnet for end-to-end testing
-    if [ "$RUN_E2E" = true ]; then
-        echo "Deploying to testnet for E2E testing..."
-        near dev-deploy --wasmFile target/wasm32-unknown-unknown/release/flexnet_gx_blockchain.wasm
-    fi
+        # Deploy to testnet for end-to-end testing
+        if [ "$RUN_E2E" = true ]; then
+            echo "Deploying to testnet for E2E testing..."
+            near dev-deploy --wasmFile target/wasm32-unknown-unknown/release/flexnet_gx_blockchain.wasm
+        fi
 
-    cd ../scripts
-}
+        cd ../scripts
+    }
 
 # Function to test Lambda functions
-test_lambda() {
-    echo -e "\n${BLUE}Testing AWS Lambda Functions...${NC}"
-    cd ../flexnet-gx-lambda
+    test_lambda() {
+        echo -e "\n${BLUE}Testing AWS Lambda Functions...${NC}"
+        cd ../flexnet-gx-lambda
 
-    echo "Running unit tests..."
-    cargo test -- --nocapture
+        echo "Running unit tests..."
+        cargo test -- --nocapture
 
-    if [ "$RUN_E2E" = true ]; then
-        echo "Running integration tests with AWS..."
-        # Test against real AWS services
-        cargo test --features integration-tests -- --nocapture
-    fi
+        if [ "$RUN_E2E" = true ]; then
+            echo "Running integration tests with AWS..."
+            cargo test --features integration-tests -- --nocapture
+        fi
 
-    cd ../scripts
-}
+        cd ../scripts
+    }
 
 # Function to test frontend
-test_frontend() {
-    echo -e "\n${BLUE}Testing Frontend Components...${NC}"
-    cd ../flexnet-gx-web
+    test_frontend() {
+        echo -e "\n${BLUE}Testing Frontend Components...${NC}"
+        cd ../flexnet-gx-web
 
-    echo "Running unit tests..."
-    wasm-pack test --node
+        echo "Running unit tests..."
+        wasm-pack test --node
 
-    if [ "$RUN_E2E" = true ]; then
-        echo "Running E2E tests..."
-        wasm-pack test --headless --firefox
-    fi
+        if [ "$RUN_E2E" = true ]; then
+            echo "Running E2E tests..."
+            wasm-pack test --headless --firefox
+        fi
 
-    cd ../scripts
-}
+        cd ../scripts
+    }
 
-# Function to run database tests
-test_database() {
-    echo -e "\n${BLUE}Testing Database Operations...${NC}"
+# Function to run database tests using SQLite
+    test_database() {
+        echo -e "\n${BLUE}Testing Database Operations with SQLite...${NC}"
+    
+    # Check if the SQLite database file exists, create it if it doesn't
+        DB_FILE="../tests/db/unsterlink.db"
+        if [ ! -f "$DB_FILE" ]; then
+            echo "Creating SQLite database file: unsterlink.db..."
+            sqlite3 "$DB_FILE" "VACUUM;"
+        else
+            echo "SQLite database file already exists: unsterlink.db"
+        fi
     
     # Test database migrations
-    echo "Testing database migrations..."
-    PGPASSWORD=flexnetgx psql -U flexnetgx -d flexnetgx -f ../tests/db/migrations_test.sql
+        echo "Testing database migrations..."
+        sqlite3 "$DB_FILE" < ../tests/db/migrations_test.sql
 
     # Test database queries
-    echo "Testing database queries..."
-    PGPASSWORD=flexnetgx psql -U flexnetgx -d flexnetgx -f ../tests/db/queries_test.sql
-}
+        echo "Testing database queries..."
+        sqlite3 "$DB_FILE" < ../tests/db/queries_test.sql
+    }
 
 # Function to test API endpoints
-test_api() {
-    echo -e "\n${BLUE}Testing API Endpoints...${NC}"
+    test_api() {
+        echo -e "\n${BLUE}Testing API Endpoints...${NC}"
     
-    if [ "$RUN_E2E" = true ]; then
-        # Test actual API endpoints
-        echo "Testing live API endpoints..."
-        curl -s "$API_ENDPOINT/health" || echo "API health check failed"
-    else
-        # Run mock API tests
-        echo "Running mock API tests..."
-        cd ../tests/api
-        node run_api_tests.js
-        cd ../../scripts
-    fi
-}
+        if [ "$RUN_E2E" = true ]; then
+            echo "Testing live API endpoints..."
+            curl -s "$API_ENDPOINT/health" || echo "API health check failed"
+        else
+            echo "Running mock API tests..."
+            cd ../tests/api
+            node run_api_tests.js
+            cd ../../scripts
+        fi
+    }
 
 # Function to run security tests
-run_security_tests() {
-    echo -e "\n${BLUE}Running Security Tests...${NC}"
+    run_security_tests() {
+        echo -e "\n${BLUE}Running Security Tests...${NC}"
 
-    # Check for known vulnerabilities
-    echo "Checking dependencies for vulnerabilities..."
-    cargo audit
+        echo "Checking dependencies for vulnerabilities..."
+        cargo audit
 
-    # Run OWASP ZAP if installed
-    if command -v zap-cli &> /dev/null; then
-        echo "Running OWASP ZAP scan..."
-        zap-cli quick-scan --self-contained --spider -r "$API_ENDPOINT"
-    fi
-}
+        if command -v zap-cli &> /dev/null; then
+            echo "Running OWASP ZAP scan..."
+            zap-cli quick-scan --self-contained --spider -r "$API_ENDPOINT"
+        fi
+    }
 
 # Function to run performance tests
-run_performance_tests() {
-    echo -e "\n${BLUE}Running Performance Tests...${NC}"
+    run_performance_tests() {
+        echo -e "\n${BLUE}Running Performance Tests...${NC}"
 
-    # Test Near Protocol contract performance
-    echo "Testing contract performance..."
-    cd ../flexnet-gx-blockchain
-    cargo bench
-    cd ../scripts
+        echo "Testing contract performance..."
+        cd ../flexnet-gx-blockchain
+        cargo bench
+        cd ../scripts
 
-    # Test API performance with Apache Bench
-    if command -v ab &> /dev/null; then
-        echo "Running API performance tests..."
-        ab -n 1000 -c 10 "$API_ENDPOINT/health"
-    fi
-}
+        if command -v ab &> /dev/null; then
+            echo "Running API performance tests..."
+            ab -n 1000 -c 10 "$API_ENDPOINT/health"
+        fi
+    }
 
 # Function to generate test reports
-generate_test_report() {
-    echo -e "\n${BLUE}Generating Test Reports...${NC}"
+    generate_test_report() {
+        echo -e "\n${BLUE}Generating Test Reports...${NC}"
     
-    REPORT_DIR="../test-reports"
-    mkdir -p "$REPORT_DIR"
+        REPORT_DIR="../test-reports"
+        mkdir -p "$REPORT_DIR"
 
-    # Collect all test results
-    echo "Test Report - $(date)" > "$REPORT_DIR/test_report.txt"
-    echo "===================" >> "$REPORT_DIR/test_report.txt"
+        echo "Test Report - $(date)" > "$REPORT_DIR/test_report.txt"
+        echo "===================" >> "$REPORT_DIR/test_report.txt"
     
-    # Add test results to report
-    find ../ -name "*.test-results" -exec cat {} \; >> "$REPORT_DIR/test_report.txt"
+        find ../ -name "*.test-results" -exec cat {} \; >> "$REPORT_DIR/test_report.txt"
 
-    # Generate coverage report
-    if [ "$GENERATE_COVERAGE" = true ]; then
-        echo "Generating coverage report..."
-        cargo tarpaulin --out Html --output-dir "$REPORT_DIR/coverage"
-    fi
-}
+        if [ "$GENERATE_COVERAGE" = true ]; then
+            echo "Generating coverage report..."
+            cargo tarpaulin --out Html --output-dir "$REPORT_DIR/coverage"
+        fi
+    }
 
 # Function to run cleanup after tests
-cleanup_test_environment() {
-    echo -e "\n${BLUE}Cleaning up test environment...${NC}"
+    cleanup_test_environment() {
+        echo -e "\n${BLUE}Cleaning up test environment...${NC}"
     
-    # Clean up test database
-    PGPASSWORD=flexnetgx psql -U flexnetgx -d flexnetgx -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+        # Clean up test database for SQLite
+        echo "Cleaning up SQLite test database..."
+        rm ../tests/db/unsterlink.db || true
 
-    # Remove test contracts from testnet
-    if [ "$RUN_E2E" = true ]; then
-        near delete test.near
-    fi
+        if [ "$RUN_E2E" = true ]; then
+            near delete test.near
+        fi
 
-    # Clean up test artifacts
-    rm -rf ../target/debug/deps/test*
-}
+        rm -rf ../target/debug/deps/test*
+    }
 
 # Main test execution function
-run_tests() {
-    echo -e "${BLUE}Starting UNsterlink Test Suite...${NC}"
+    run_tests() {
+        echo -e "${BLUE}Starting UNsterlink Test Suite...${NC}"
     
-    # Parse command line arguments
-    RUN_E2E=false
-    GENERATE_COVERAGE=false
+        RUN_E2E=false
+        GENERATE_COVERAGE=false
     
-    while [[ "$#" -gt 0 ]]; do
-        case $1 in
-            --e2e) RUN_E2E=true ;;
-            --coverage) GENERATE_COVERAGE=true ;;
-            *) echo "Unknown parameter: $1"; exit 1 ;;
-        esac
-        shift
-    done
+        while [[ "$#" -gt 0 ]]; do
+            case $1 in
+                --e2e) RUN_E2E=true ;;
+                --coverage) GENERATE_COVERAGE=true ;;
+                *) echo "Unknown parameter: $1"; exit 1 ;;
+            esac
+            shift
+        done
 
-    # Run all tests
-    test_near_contract
-    test_lambda
-    test_frontend
-    test_database
-    test_api
-    run_security_tests
-    run_performance_tests
+        test_near_contract
+        test_lambda
+        test_frontend
+        test_database
+        test_api
+        run_security_tests
+        run_performance_tests
 
-    # Generate reports
-    generate_test_report
+        generate_test_report
+        cleanup_test_environment
 
-    # Cleanup
-    cleanup_test_environment
-
-    echo -e "${GREEN}All tests completed successfully!${NC}"
-}
+        echo -e "${GREEN}All tests completed successfully!${NC}"
+    }
 
 # Show test suite usage
-show_usage() {
-    echo -e "Usage: $0 [options]"
-    echo -e "Options:"
-    echo -e "  --e2e        Run end-to-end tests"
-    echo -e "  --coverage   Generate coverage reports"
-    echo -e "Example: $0 --e2e --coverage"
-}
+    show_usage() {
+        echo -e "Usage: $0 [options]"
+        echo -e "Options:"
+        echo -e "  --e2e        Run end-to-end tests"
+        echo -e "  --coverage   Generate coverage reports"
+        echo -e "Example: $0 --e2e --coverage"
+    }
 
 # Main execution
-if [ "$1" == "--help" ]; then
-    show_usage
-else
-    run_tests "$@"
-fi
+    if [ "$1" == "--help" ]; then
+        show_usage
+        else
+        run_tests "$@"
+    fi
 EOF
 
 cat << 'EOF' > scripts/deploy-lambda.sh

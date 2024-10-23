@@ -88,8 +88,8 @@ All scripts are located in the `scripts/` directory:
 
 ### 1. Development Environment Setup
 ```bash
-chmod +x scripts/setup-dev-env.sh
-./scripts/setup-dev-env.sh
+chmod +x scripts/2_setup.sh
+./scripts/2_setup.sh_setup
 ```
 
 ### 2. Environment Variable Encryption
