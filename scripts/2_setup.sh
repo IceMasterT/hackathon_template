@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# FlexNet GX Development Environment Setup Script
+# UNsterlink Development Environment Setup Script
 # This script sets up all necessary development tools and configurations
 
 set -e
@@ -13,7 +13,6 @@ NC='\033[0m'
 
 # Development environment configuration
 NODE_VERSION="18.x"
-POSTGRESQL_VERSION="14"
 RUST_VERSION="1.70.0"
 
 # Function to check if running as root
@@ -51,9 +50,7 @@ install_system_dependencies() {
         curl \
         wget \
         git \
-        postgresql-$POSTGRESQL_VERSION \
-        postgresql-contrib-$POSTGRESQL_VERSION \
-        libpq-dev \
+        libsqlite3-dev \
         nodejs \
         npm
 }
@@ -84,20 +81,31 @@ setup_rust() {
     rustup target add x86_64-unknown-linux-musl
 }
 
-# Function to setup PostgreSQL database
+# Function to setup SQLite database
 setup_database() {
-    echo -e "${BLUE}Setting up PostgreSQL database...${NC}"
-    sudo systemctl start postgresql
-    sudo systemctl enable postgresql
+    echo -e "${BLUE}Setting up SQLite database...${NC}"
     
-    # Create database and user
-    sudo -u postgres psql -c "CREATE DATABASE flexnetgx;"
-    sudo -u postgres psql -c "CREATE USER flexnetgx WITH ENCRYPTED PASSWORD 'flexnetgx';"
-    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE flexnetgx TO flexnetgx;"
+    # Install SQLite if it's not already installed
+    if ! command -v sqlite3 >/dev/null; then
+        echo -e "${BLUE}Installing SQLite...${NC}"
+        $PKG_INSTALL sqlite3
+    fi
     
-    # Import database schema
+    # Define database file path
+    DB_FILE="../tests/db/unsterlink.db"
+    
+    # Check if the database file exists, if not, create it
+    if [ ! -f "$DB_FILE" ]; then
+        echo "Creating SQLite database file: unsterlink.db..."
+        sqlite3 "$DB_FILE" "VACUUM;"  # Initialize the database
+        echo -e "${GREEN}SQLite database created: $DB_FILE${NC}"
+    else
+        echo -e "${GREEN}SQLite database file already exists: $DB_FILE${NC}"
+    fi
+    
+    # Import database schema if it exists
     if [ -f "../FYI.sql" ]; then
-        sudo -u postgres psql flexnetgx < ../FYI.sql
+        sqlite3 "$DB_FILE" < ../FYI.sql
         echo -e "${GREEN}Database schema imported successfully${NC}"
     else
         echo -e "${RED}Warning: Database schema file (FYI.sql) not found${NC}"
@@ -226,7 +234,7 @@ EOF
 
 # Main setup function
 main() {
-    echo -e "${BLUE}Starting FlexNet GX development environment setup...${NC}"
+    echo -e "${BLUE}Starting UNsterlink development environment setup...${NC}"
     
     check_root
     check_package_manager
@@ -234,7 +242,7 @@ main() {
     install_system_dependencies
     setup_nodejs
     setup_rust
-    setup_database
+    setup_database  # Now using SQLite instead of PostgreSQL
     setup_near_dev
     setup_aws
     setup_env

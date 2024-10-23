@@ -25,7 +25,7 @@ git checkout qe_redacted
 - Near CLI (for blockchain interaction)
 - Node.js and npm
 - wasm-pack
-- PostgreSQL
+- SQLite
 
 ## Initial Setup
 

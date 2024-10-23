@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Enhanced FlexNet GX Setup Script with Error Checking and Dependency Management
+# Enhanced UNsterlink Setup Script with Error Checking and Dependency Management
 # Includes Near Protocol Integration
 
 set -e
@@ -72,13 +72,13 @@ setup_flexnet_gx() {
     # Move to parent directory
     cd ..
 
-    # Create the main FlexNet GX directory
+    # Create the main UNsterlink directory
     check_and_create_dir "FlexNetGX"
     cd FlexNetGX
 
     # Create README.md
     cat << EOF > README.md
-# FlexNet GX Application
+# UNsterlink Application
 
 This is a modern, serverless application with a Yew-based web frontend (WebAssembly), 
 a mobile app structure, AWS serverless backend, and Near Protocol blockchain integration,
@@ -150,10 +150,10 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
 reqwest = { version = "0.11", features = ["json"] }
-near-sdk = "4.0.0"
-near-api-js = "0.1.0"
-aes-gcm = "0.9"
-sha2 = "0.9"
+near-sdk = "5.5.0"
+near-api = "0.2.0"
+aes-gcm = "0.10"
+sha2 = "0.10"
 hex = "0.4"
 
 [lib]
@@ -194,9 +194,9 @@ reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
-near-sdk = "4.0.0"
-aes-gcm = "0.9"
-sha2 = "0.9"
+near-sdk = "5.5.0"
+aes-gcm = "0.10"
+sha2 = "0.10"
 hex = "0.4"
 
 [target.'cfg(target_os = "android")'.dependencies]
@@ -246,9 +246,9 @@ tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
-near-sdk = "4.0.0"
-aes-gcm = "0.9"
-sha2 = "0.9"
+near-sdk = "5.5.0"
+aes-gcm = "0.10"
+sha2 = "0.10"
 hex = "0.4"
 
 [[bin]]
@@ -277,7 +277,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-near-sdk = "4.0.0"
+near-sdk = "5.5.0"
 near-contract-standards = "4.0.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -350,10 +350,10 @@ EOF
 
     # Create test script
     cat << 'EOF' > scripts/test.sh
-    # FlexNet GX Testing Suite
+    # UNsterlink Testing Suite
     #!/bin/bash
 
-# FlexNet GX Testing Suite
+# UNsterlink Testing Suite
 # Comprehensive testing script for all components
 
 set -e
@@ -530,7 +530,7 @@ cleanup_test_environment() {
 
 # Main test execution function
 run_tests() {
-    echo -e "${BLUE}Starting FlexNet GX Test Suite...${NC}"
+    echo -e "${BLUE}Starting UNsterlink Test Suite...${NC}"
     
     # Parse command line arguments
     RUN_E2E=false
@@ -940,6 +940,29 @@ main
 EOF
 
 # Create deploy-lambda.sh
+cat << 'EOF' > .env.example
+# Create .env.example
+cat << 'EOF' > .env.example
+
+AWS_REGION=us-east-1
+S3_BUCKET=your-s3-bucket-name
+LAMBDA_FUNCTION_NAME=your-lambda-function-name
+API_GATEWAY_ID=your-api-gateway-id
+CLOUDFRONT_DISTRIBUTION_ID=your-cloudfront-distribution-id
+LAMBDA_FUNCTION_ARN=your-lambda-function-arn
+LAMBDA_RUNTIME=provided.al2
+LAMBDA_HANDLER=bootstrap
+LAMBDA_ROLE_NAME=your-lambda-role-name
+LAMBDA_ROLE_ARN=your-lambda-role-arn
+
+- - - - - - - - - - - - 
+// use this to create a .env file with your information in the same path as this file
+// Run encrypt_env.sh 
+// Place Generated .env.encrypted file inside the FlexNetGX root and rename to .env
+
+EOF
+
+# Create deploy-lambda.sh
 cat << 'EOF' > scripts/encrypt_env.sh
 #!/bin/bash
 
@@ -1039,35 +1062,26 @@ NEAR_CONTRACT_NAME=flexnetgx.testnet
 EOF
 
 echo "Encryption complete. Created $ENCRYPTED_ENV_FILE with encrypted values."
-echo "Here are the encrypted values:"
-grep "^ENCRYPTED_" "$ENCRYPTED_ENV_FILE"
 
 echo -e "\nNext steps:"
 echo "1. Copy the generated .env.encrypted file to the FlexNetGX root directory"
 echo "2. Rename .env.encrypted to .env in the FlexNetGX root directory"
 echo "3. Your application will now use the encrypted values for both AWS and Near Protocol"
 echo -e "\nCongratulations!! You have successfully encrypted your environment variables!"
-EOF
 
 chmod +x scripts/encrypt_env.sh
 
 chmod +x scripts/deploy.sh
     
-    # Move deploy scripts to scripts directory
-    mv deploy.sh scripts/
-    mv deploy-lambda.sh scripts/
-    mv encrypt_env.sh scripts/
-
     # Make scripts executable
     chmod +x scripts/test.sh
     chmod +x scripts/deploy.sh
     chmod +x scripts/deploy-lambda.sh
-    chmod +x scripts/encrypt_env.sh
 
-    echo "FlexNet GX setup completed successfully!"
+    echo "UNsterlink setup completed successfully!"
     echo "Next steps:"
     echo "1. Configure your Near Protocol account using 'near login'"
-    echo "2. Update .env with your configuration"
+    echo "2. Update '.env.example' with your configuration"
     echo "3. Run './scripts/encrypt_env.sh' to encrypt your environment variables"
     echo "4. Run './scripts/deploy.sh' to deploy the application"
 }
