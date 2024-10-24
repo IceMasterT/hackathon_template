@@ -13,26 +13,27 @@ git checkout qe_redacted
 
 ## Prerequisites
 
-- Rust and Cargo (latest stable version)
+- Docker and Docker Compose
 - AWS CLI (configured with appropriate credentials)
 - Near CLI (for blockchain interaction)
-- Node.js and npm
-- Docker and Docker Compose
-- wasm-pack
+
+Note: Other dependencies (Rust, Node.js, wasm-pack) are automatically installed during the Docker build process.
 
 ## Directory Structure
 
 ```
-FlexNetGX/
-├── Dockerfile              # Docker configuration
-├── docker-compose.yml      # Docker Compose configuration
-├── .dockerignore          # Docker ignore rules
-├── .env                   # Environment variables
-├── scripts/               # Scripts directory
-├── flexnet-gx-web/        # Web frontend
-├── flexnet-gx-mobile/     # Mobile app
-├── flexnet-gx-lambda/     # Lambda functions
-└── flexnet-gx-blockchain/ # Blockchain code
+├── .github/              # GitHub configurations
+├── FlexNetGX/
+│   ├── Dockerfile              # Docker configuration
+│   ├── docker-compose.yml      # Docker Compose configuration
+│   ├── .dockerignore          # Docker ignore rules
+│   ├── .env                   # .env.example variables after run encrypt_env.sh
+│   ├── scripts/               # Deployment and utility scripts
+│   ├── flexnet-gx-web/        # Web frontend (Yew/WebAssembly)
+│   ├── flexnet-gx-mobile/     # Mobile application
+│   ├── flexnet-gx-lambda/     # AWS Lambda functions
+│   └── flexnet-gx-blockchain/ # Near Protocol blockchain code
+└── scripts/              # Setup scripts (auto-run during Docker build)
 ```
 
 ## DOCKER | Building and Running
@@ -44,20 +45,14 @@ docker-compose build
 
 2. Start the services:
 ```bash
-docker-compose up -d
+# This will automatically run setup scripts (1_setup.sh and 2_setup.sh)
+docker-compose up --build -d
 ```
 
 3. Enter the container:
 ```bash
 docker-compose exec unsterlink bash
 ```
-
-4. Inside the container, run setup:
-```bash
-cd /app/scripts
-./setup.sh
-```
-
 ## Development
 
 For development, you can mount your source code directory:
@@ -84,7 +79,7 @@ docker-compose down -v
 
 ## Environment Configuration
 
-Create a `.env` file in the root directory:
+Configure a `.env` file in the root directory:
 
 ```bash
 # Copy example environment file
@@ -92,10 +87,20 @@ cp .env.example .env
 
 # Edit .env with your configurations
 nano .env
+
+# Encrypt sensitive variables
+./scripts/encrypt_env.sh
 ```
+
+The encryption process will:
+- Read variables from `.env`
+- Encrypt sensitive values
+- Create new `.env` with encrypted values
+- Preserve non-sensitive variables
 
 Required environment variables:
 ```
+# AWS Configuration
 AWS_REGION=us-east-1
 S3_BUCKET=your-s3-bucket-name
 LAMBDA_FUNCTION_NAME=your-lambda-function-name
@@ -106,6 +111,11 @@ LAMBDA_RUNTIME=provided.al2
 LAMBDA_HANDLER=bootstrap
 LAMBDA_ROLE_NAME=your-lambda-role-name
 LAMBDA_ROLE_ARN=your-lambda-role-arn
+
+# Near Protocol Configuration
+NEAR_ACCOUNT_ID=your-account.testnet
+NEAR_NETWORK=testnet
+NEAR_CONTRACT_NAME=flexnetgx.testnet
 ```
 
 ## Testing
@@ -113,21 +123,42 @@ LAMBDA_ROLE_ARN=your-lambda-role-arn
 Run the test suite:
 
 ```bash
-# All tests
+# Full test suite
 ./scripts/test.sh
 
-# With specific options
-./scripts/test.sh --e2e         # Include end-to-end tests
-./scripts/test.sh --coverage    # Generate coverage reports
+# With options
+./scripts/test.sh --e2e      # Include end-to-end tests
+./scripts/test.sh --coverage # Generate coverage reports
 ```
 
-## Support
+### Deployment
 
-For support and questions:
-1. Check the documentation
-2. Review CloudWatch logs
-3. Near Protocol Explorer
-4. Contact team lead
+1. Deploy all components:
+
+```bash
+./scripts/deploy.sh
+```
+
+Deploy lambda functions only:
+
+```bash
+./scripts/deploy-lambda.sh
+```
+### Monitoring and Support
+
+1. AWS CloudWatch Logs
+   - Lambda function logs
+   - API Gateway access logs
+
+2. Near Protocol
+   - Contract status: `near state <contract-name>`
+   - Explorer: https://explorer.testnet.near.org/
+
+3. Support Resources
+   - Project documentation
+   - CloudWatch logs
+   - Near Protocol Explorer
+   - Team lead contact
 
 ## License
 

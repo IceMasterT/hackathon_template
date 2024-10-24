@@ -1,6 +1,43 @@
+# Table of Contents
+
+- [FlexNet GX Application](#flexnet-gx-application)
+- [Quick Start](#quick-start)
+- [Prerequisites](#prerequisites)
+- [Setup Options](#setup-options)
+  - [Docker Setup (Recommended)](#docker-setup-recommended)
+  - [Manual Setup](#manual-setup)
+- [Directory Structure](#directory-structure)
+- [Development Workflow](#development-workflow)
+  - [1. Working with Near Protocol](#1-working-with-near-protocol)
+  - [2. Working with AWS Lambda](#2-working-with-aws-lambda)
+  - [3. Frontend Development](#3-frontend-development)
+  - [4. Mobile Development](#4-mobile-development)
+- [Environment Configuration](#environment-configuration)
+- [Deployment Process](#deployment-process)
+  - [1. Deploy All Components](#1-deploy-all-components)
+  - [2. Deploy Lambda Only](#2-deploy-lambda-only)
+  - [3. Verify Deployments](#3-verify-deployments)
+- [Debugging and Logging](#debugging-and-logging)
+  - [Lambda Function Logs](#lambda-function-logs)
+  - [Near Contract Debugging](#near-contract-debugging)
+- [Testing](#testing)
+- [Monitoring and Troubleshooting](#monitoring-and-troubleshooting)
+  - [AWS Resources](#aws-resources)
+  - [Near Protocol](#near-protocol)
+  - [Support Resources](#support-resources)
+- [Security Features](#security-features)
+- [Troubleshooting](#troubleshooting)
+  - [Common Issues](#common-issues)
+  - [Logs and Debugging](#logs-and-debugging)
+  - [Deployment Verification](#deployment-verification)
+  - [Environment Issues](#environment-issues)
+  - [Common Error Solutions](#common-error-solutions)
+- [License](#license)
+
 # FlexNet GX Application
 
 A modern, serverless application with a Yew-based web frontend (WebAssembly), mobile app structure, AWS serverless backend, and Near Protocol blockchain integration, all implemented in Rust.
+
 
 ## Quick Start
 
@@ -9,68 +46,108 @@ git clone git@github.com:cryptoversus-io/hackathon_templates.git redacted
 cd redacted
 git branch qe_redacted
 git checkout qe_redacted
-
-# Make setup scripts executable
-chmod +x scripts/1_setup.sh scripts/2_setup.sh
-
-# Run setup scripts in order
-./scripts/1_setup.sh
-./scripts/2_setup.sh
 ```
-
-## Structure
-
-- `flexnet-gx-web/`: Yew-based web frontend (WebAssembly)
-- `flexnet-gx-mobile/`: Mobile application structure
-- `flexnet-gx-lambda/`: Rust-based AWS Lambda functions
-- `flexnet-gx-blockchain/`: Near Protocol blockchain integration
 
 ## Prerequisites
 
-- Rust and Cargo (latest stable version)
-- AWS CLI (configured with appropriate credentials)
-- Near CLI (for blockchain interaction)
-- Node.js and npm
-- wasm-pack
-- SQLite
+Before setting up the project, you only need:
+- AWS credentials configured
+- Near Protocol account
 
-## Initial Setup
+Note: All required tools and dependencies (Rust, Node.js, Near CLI, wasm-pack, etc.) will be installed automatically by the setup scripts.
 
-1. Install Required Tools:
-   ```bash
-   # Install Rust
-   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-   
-   # Install Near CLI
-   npm install -g near-cli
-   
-   # Install wasm-pack
-   curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-   ```
+## Setup Options [⬆️ back to top](#flexnet-gx-application)
 
-2. Configure Environment Variables:
-   ```bash
-   # Copy example environment file
-   cp .env.example .env
-   
-   # Edit .env with your configurations
-   nano .env
-   ```
+### Docker Setup (Recommended)
 
-3. Encrypt Environment Variables:
-   ```bash
-   cd scripts
-   chmod +x encrypt_env.sh
-   ./encrypt_env.sh
-   
-   # Move and rename the encrypted file
-   mv .env.encrypted ../FlexNetGX/.env
-   ```
+The setup scripts (1_setup.sh and 2_setup.sh) run automatically during the Docker build:
+```bash
+docker-compose build
+docker-compose up -d
+```
 
-## Environment Configuration
+### Manual Setup
 
-Required variables in .env:
-```plaintext
+```bash
+cd scripts
+chmod +x 1_setup.sh 2_setup.sh
+./1_setup.sh
+./2_setup.sh
+```
+
+## Directory Structure
+
+```
+├── .github/              # GitHub configurations
+├── FlexNetGX/
+│   ├── scripts/               # Deployment and utility scripts
+│   ├── flexnet-gx-web/        # Web frontend (Yew/WebAssembly)
+│   ├── flexnet-gx-mobile/     # Mobile app
+│   ├── flexnet-gx-lambda/     # Lambda functions
+│   └── flexnet-gx-blockchain/ # Near Protocol blockchain code
+└── scripts/              # Setup scripts
+    ├── 1_setup.sh            # Initial setup script
+    └── 2_setup.sh            # Secondary setup script
+```
+
+## Development Workflow [⬆️ back to top](#flexnet-gx-application)
+
+### 1. Working with Near Protocol
+
+```bash
+# Login to Near testnet
+near login
+
+# Check contract status
+near state $ENCRYPTED_NEAR_CONTRACT_NAME
+
+# View contract methods
+near view $ENCRYPTED_NEAR_CONTRACT_NAME get_methods
+
+# Deploy contract changes
+./scripts/deploy.sh
+```
+
+### 2. Working with AWS Lambda
+
+```bash
+# Deploy Lambda changes
+./scripts/deploy-lambda.sh
+
+# View logs
+aws logs tail /aws/lambda/$ENCRYPTED_LAMBDA_FUNCTION_NAME --follow
+
+# Test function
+aws lambda invoke \
+    --function-name $ENCRYPTED_LAMBDA_FUNCTION_NAME \
+    --payload '{"test": "event"}' \
+    response.json
+```
+
+### 3. Frontend Development
+
+```bash
+cd flexnet-gx-web
+wasm-pack build --target web
+```
+
+### 4. Mobile Development
+
+```bash
+cd flexnet-gx-mobile
+cargo build
+cargo run
+```
+
+## Environment Configuration [⬆️ back to top](#flexnet-gx-application)
+
+The encryption process converts `.env.example` to `.env` with encrypted values:
+1. Copy the example file: `cp .env.example .env`
+2. Edit with your values: `nano .env`
+3. Run encryption: `./scripts/encrypt_env.sh`
+
+Variables before encryption (.env.example):
+```bash
 # AWS Configuration
 AWS_REGION=us-east-1
 S3_BUCKET=your-s3-bucket-name
@@ -89,83 +166,156 @@ NEAR_NETWORK=testnet
 NEAR_CONTRACT_NAME=flexnetgx.testnet
 ```
 
-## Scripts Usage
-
-All scripts are located in the `scripts/` directory:
-
-### 1. Development Environment Setup
+After running encrypt_env.sh (.env):
 ```bash
-chmod +x scripts/1_setup.sh
-./scripts/1_setup.sh
+# Encrypted AWS Configuration
+ENCRYPTED_LAMBDA_FUNCTION_NAME=<encrypted-value>
+ENCRYPTED_API_GATEWAY_ID=<encrypted-value>
+ENCRYPTED_CLOUDFRONT_DISTRIBUTION_ID=<encrypted-value>
+ENCRYPTED_LAMBDA_FUNCTION_ARN=<encrypted-value>
+ENCRYPTED_LAMBDA_ROLE_NAME=<encrypted-value>
+ENCRYPTED_LAMBDA_ROLE_ARN=<encrypted-value>
 
-chmod +x scripts/2_setup.sh
-./scripts/2_setup.sh
+# Non-encrypted values remain the same
+AWS_REGION=us-east-1
+LAMBDA_RUNTIME=provided.al2
+LAMBDA_HANDLER=bootstrap
+
+# Near Protocol Configuration (encrypted)
+ENCRYPTED_NEAR_ACCOUNT_ID=<encrypted-value>
+ENCRYPTED_NEAR_CONTRACT_NAME=<encrypted-value>
+NEAR_NETWORK=testnet
 ```
 
-### 2. Environment Variable Encryption
-```bash
-./scripts/encrypt_env.sh
-```
+## Deployment Process [⬆️ back to top](#flexnet-gx-application)
 
-### 3. Deployment
+### 1. Deploy All Components
+
 ```bash
-# Full deployment
+# Deploy everything (web, mobile, Lambda, Near contract)
 ./scripts/deploy.sh
+```
 
-# Lambda-only deployment
+### 2. Deploy Lambda Only
+
+```bash
+# Deploy Lambda changes
 ./scripts/deploy-lambda.sh
 ```
 
-### 4. Testing
-```bash
-# Run all tests
-./scripts/test.sh
+### 3. Verify Deployments
 
-# Run with specific options
-./scripts/test.sh --e2e         # Include end-to-end tests
-./scripts/test.sh --coverage    # Generate coverage reports
+```bash
+# Check Lambda
+aws lambda get-function --function-name $ENCRYPTED_LAMBDA_FUNCTION_NAME
+
+# Check Near contract
+near state $ENCRYPTED_NEAR_CONTRACT_NAME
+
+# Check CloudFront
+aws cloudfront get-distribution --id $ENCRYPTED_CLOUDFRONT_DISTRIBUTION_ID
 ```
 
-## Near Protocol Integration
+## Debugging and Logging [⬆️ back to top](#flexnet-gx-application)
 
-1. Login to Near testnet:
-   ```bash
-   near login
-   ```
+### Lambda Function Logs
 
-2. Check contract status:
-   ```bash
-   near state $NEAR_CONTRACT_NAME
-   ```
+1. CloudWatch Logs:
+```bash
+# View recent logs
+aws logs get-log-events \
+    --log-group-name /aws/lambda/$ENCRYPTED_LAMBDA_FUNCTION_NAME \
+    --log-stream-name `date +%Y/%m/%d/[$VERSION]%h`
 
-3. View contract methods:
-   ```bash
-   near view $NEAR_CONTRACT_NAME get_methods
-   ```
+# Watch logs in real-time
+aws logs tail /aws/lambda/$ENCRYPTED_LAMBDA_FUNCTION_NAME --follow
+```
 
-## Development Workflow
+2. Error Handling:
+```bash
+# Check Lambda execution role
+aws lambda get-function-configuration \
+    --function-name $ENCRYPTED_LAMBDA_FUNCTION_NAME
 
-1. Start Local Development:
-   ```bash
-   # Frontend
-   cd flexnet-gx-web
-   wasm-pack build --target web
-   
-   # Near Contract
-   cd flexnet-gx-blockchain
-   cargo build --target wasm32-unknown-unknown --release
-   ```
+# Test Lambda function
+aws lambda invoke \
+    --function-name $ENCRYPTED_LAMBDA_FUNCTION_NAME \
+    --payload '{"test": "event"}' \
+    response.json
+```
 
-2. Deploy Changes:
-   ```bash
-   cd scripts
-   ./deploy.sh
-   ```
+### Near Contract Debugging [⬆️ back to top](#flexnet-gx-application)
 
-3. Run Tests:
-   ```bash
-   ./test.sh
-   ```
+1. View Contract State:
+```bash
+# View all state
+near view-state $ENCRYPTED_NEAR_CONTRACT_NAME
+
+# View specific methods
+near call $ENCRYPTED_NEAR_CONTRACT_NAME get_status {} --accountId $ENCRYPTED_NEAR_ACCOUNT_ID
+
+# Check contract logs
+near view $ENCRYPTED_NEAR_CONTRACT_NAME get_logs
+```
+
+2. Transaction Inspection:
+```bash
+# View recent transactions
+near tx-status <TX_HASH> --accountId $ENCRYPTED_NEAR_ACCOUNT_ID
+
+# View contract metrics
+near state $ENCRYPTED_NEAR_CONTRACT_NAME
+```
+
+## Testing
+
+Run the test suite:
+```bash
+# All tests
+./scripts/test.sh
+
+# With specific options
+./scripts/test.sh --e2e      # Include end-to-end tests
+./scripts/test.sh --coverage # Generate coverage reports
+```
+
+## Monitoring and Troubleshooting [⬆️ back to top](#flexnet-gx-application)
+
+### AWS Resources
+
+1. Lambda Functions:
+   - Check CloudWatch Logs for errors
+   - Monitor function metrics in CloudWatch
+   - Review IAM roles and permissions
+
+2. API Gateway:
+   - Monitor request/response logs
+   - Check API Gateway CloudWatch metrics
+   - Verify endpoint configurations
+
+### Near Protocol
+
+1. Contract Monitoring:
+   - Use Near Explorer for transaction history
+   - Monitor contract storage usage
+   - Check gas consumption metrics
+
+2. Common Issues:
+   - Check account balance for contract deployment
+   - Verify contract method permissions
+   - Monitor network status
+
+### Support Resources
+
+1. AWS Documentation:
+   - Lambda troubleshooting guide
+   - CloudWatch logs insights
+   - IAM troubleshooting
+
+2. Near Protocol Resources:
+   - Near Explorer: https://explorer.testnet.near.org/
+   - Near CLI documentation
+   - Contract debugging guide
 
 ## Security Features
 
@@ -196,312 +346,95 @@ chmod +x scripts/2_setup.sh
    rustup target add wasm32-unknown-unknown
    ```
 
-### Logs and Debugging
+### Logs and Debugging [⬆️ back to top](#flexnet-gx-application)
 
-- AWS Lambda logs: CloudWatch Logs
-- Frontend console: Browser Developer Tools
-- Near Protocol logs: `near view` command
+1. AWS Lambda Logs:
+   ```bash
+   # View recent logs
+   aws logs get-log-events \
+       --log-group-name /aws/lambda/$ENCRYPTED_LAMBDA_FUNCTION_NAME \
+       --log-stream-name `date +%Y/%m/%d/[$VERSION]%h`
+   
+   # Live log tail
+   aws logs tail /aws/lambda/$ENCRYPTED_LAMBDA_FUNCTION_NAME --follow
+   ```
 
-## Deployment Verification
+2. Near Protocol Logs:
+   ```bash
+   # View contract logs
+   near view $ENCRYPTED_NEAR_CONTRACT_NAME get_logs
+   
+   # Check state
+   near state $ENCRYPTED_NEAR_CONTRACT_NAME
+   ```
+
+3. Frontend Console:
+   - Browser Developer Tools
+   - WebAssembly debugging tools
+   - Network request monitoring
+
+### Deployment Verification [⬆️ back to top](#flexnet-gx-application)
 
 Check deployment status:
 ```bash
 # Near Contract
-near state $NEAR_CONTRACT_NAME
+near state $ENCRYPTED_NEAR_CONTRACT_NAME
 
 # Lambda Function
-aws lambda get-function --function-name $LAMBDA_FUNCTION_NAME
+aws lambda get-function --function-name $ENCRYPTED_LAMBDA_FUNCTION_NAME
 
 # CloudFront
-aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID
+aws cloudfront get-distribution --id $ENCRYPTED_CLOUDFRONT_DISTRIBUTION_ID
 ```
 
-## Contributing
+### Environment Issues
 
-1. Create your feature branch
-   ```bash
-   git checkout -b feature/<amazing-feature>
-   ```
+1. Check Environment Setup:
+```bash
+# Verify encryption
+cat .env | grep "ENCRYPTED_"
 
-2. Commit your changes
-   ```bash
-   git commit -m 'Add amazing feature'
-   ```
+# Re-run encryption if needed
+./scripts/encrypt_env.sh
+```
 
-3. Push to the branch
-   ```bash
-   git push origin feature/<amazing-feature>
-   ```
+2. AWS KMS Issues:
+```bash
+# Check KMS access
+aws kms list-keys
 
-4. Submit a Pull Request
+# Test decryption
+aws kms decrypt --ciphertext-blob fileb://encrypted-value --output text --query Plaintext | base64 --decode
+```
 
-## Support
+3. Near Account Issues:
+```bash
+# Check account status
+near state $ENCRYPTED_NEAR_ACCOUNT_ID
 
-For support and questions:
-1. Check the documentation
-2. Review CloudWatch logs
-3. Near Protocol Explorer
-4. Contact team lead
+# View account balance
+near state $ENCRYPTED_NEAR_ACCOUNT_ID | grep "amount"
+```
+
+### Common Error Solutions
+
+1. "Function not found" in AWS Lambda:
+   - Verify function name in .env
+   - Check AWS region configuration
+   - Ensure proper IAM roles
+
+2. "Account not found" in Near Protocol:
+   - Verify account credentials
+   - Check testnet/mainnet configuration
+   - Ensure sufficient balance
+
+3. Build/Compilation Errors:
+   - Update Rust toolchain
+   - Clear target directories
+   - Rebuild with `--verbose` flag
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-
---------------------------------
-
-# Complete UNsterlink Cleanup Instructions
-### To use this script:
-
--Save it as cleanup.sh in the scripts directory
--Make it executable:
-```
-chmod +x scripts/cleanup.sh
-```
-Run it:
-```
-./scripts/cleanup.sh
-```
-## Binary Locations and Build Artifacts
-1. Main Project Binaries:
-   - `FlexNetGX/target/`: Main Rust compilation directory
-   - `FlexNetGX/target/release/`: Release builds
-   - `FlexNetGX/target/debug/`: Debug builds
-   - `FlexNetGX/target/wasm32-unknown-unknown/`: WebAssembly builds
-   - `FlexNetGX/target/x86_64-unknown-linux-musl/`: Lambda builds
-
-2. Component-specific Binaries:
-   - `FlexNetGX/flexnet-gx-web/target/`: Web frontend builds
-   - `FlexNetGX/flexnet-gx-web/pkg/`: WebAssembly package output
-   - `FlexNetGX/flexnet-gx-mobile/target/`: Mobile app builds
-   - `FlexNetGX/flexnet-gx-lambda/target/`: Lambda function builds
-   - `FlexNetGX/flexnet-gx-blockchain/target/`: Near Protocol contract builds
-
-## System-Level Cleanup
-
-### 1. Package Dependencies
-```bash
-# Remove all build dependencies
-sudo apt-get remove --purge -y \
-    build-essential \
-    pkg-config \
-    libssl-dev \
-    curl \
-    wget \
-    git \
-    libsqlite3-dev \
-    nodejs \
-    npm \
-    musl-tools \
-    cmake \
-    pkg-config \
-    libssl-dev \
-    zlib1g-dev
-
-# For yum-based systems:
-sudo yum remove -y \
-    gcc \
-    gcc-c++ \
-    make \
-    openssl-devel \
-    curl \
-    wget \
-    git \
-    sqlite-devel \
-    nodejs \
-    npm \
-    musl-tools \
-    cmake \
-    zlib-devel
-
-# Remove orphaned packages
-sudo apt-get autoremove -y
-sudo apt-get clean
-# Or for yum:
-sudo yum autoremove -y
-sudo yum clean all
-```
-
-### 2. Development Tools
-```bash
-# Remove Rust and all its components
-rustup self uninstall -y
-
-# Remove rustup hidden directory
-rm -rf ~/.rustup/
-
-# Remove cargo hidden directory
-rm -rf ~/.cargo/
-
-# Remove Node.js and global packages
-sudo npm uninstall -g near-cli wasm-pack yarn typescript webpack webpack-cli
-sudo apt-get remove --purge nodejs npm
-# Or for yum:
-sudo yum remove nodejs npm
-
-# Remove npm cache and config
-rm -rf ~/.npm
-rm -rf ~/.node-gyp
-rm ~/.npmrc
-
-# Remove AWS CLI and configuration
-sudo rm -rf /usr/local/aws-cli
-sudo rm /usr/local/bin/aws
-sudo rm /usr/local/bin/aws_completer
-rm -rf ~/.aws/
-
-# Remove SQLite
-sudo apt-get remove --purge sqlite3 libsqlite3-dev
-# Or for yum:
-sudo yum remove sqlite sqlite-devel
-```
-
-### 3. Project-Specific Cleanup
-```bash
-# Remove all build artifacts
-cd FlexNetGX
-find . -name "target" -type d -exec rm -rf {} +
-find . -name "pkg" -type d -exec rm -rf {} +
-find . -name "dist" -type d -exec rm -rf {} +
-find . -name "node_modules" -type d -exec rm -rf {} +
-
-# Remove temporary files
-find . -name "*.rs.bk" -type f -delete
-find . -name "*.wasm" -type f -delete
-find . -name "*.d.ts" -type f -delete
-find . -name "*.js.map" -type f -delete
-find . -name ".DS_Store" -type f -delete
-
-# Remove configuration files
-rm -rf .vscode/
-rm -rf .idea/
-rm -rf .git/
-rm -f .gitignore
-rm -f .env*
-rm -f Cargo.lock
-rm -f yarn.lock
-rm -f package-lock.json
-```
-
-### 4. Near Protocol Environment
-```bash
-# Remove Near credentials and configs
-rm -rf ~/.near-credentials/
-rm -rf neardev/
-rm -f ~/.near-config.json
-
-# Clean Near CLI cache
-rm -rf ~/.near-cli/
-```
-
-### 5. System Configuration Cleanup
-```bash
-# Remove environment variables from shell configs
-sed -i '/export PATH="$HOME\/.cargo\/bin:$PATH"/d' ~/.bashrc
-sed -i '/export PATH="$HOME\/.cargo\/bin:$PATH"/d' ~/.zshrc
-sed -i '/NEAR_ENV/d' ~/.bashrc
-sed -i '/NEAR_ENV/d' ~/.zshrc
-
-# Remove any added PPAs or repositories
-sudo rm -f /etc/apt/sources.list.d/nodesource.list
-# Or for yum:
-sudo rm -f /etc/yum.repos.d/nodesource-*.repo
-
-# Clear system caches
-sudo rm -rf /var/cache/apt/archives/*
-# Or for yum:
-sudo rm -rf /var/cache/yum/*
-```
-
-### 6. Docker Cleanup (if used)
-```bash
-# Remove Docker images
-docker rmi $(docker images | grep 'flexnet-gx' | awk '{print $3}')
-
-# Remove Docker containers
-docker rm $(docker ps -a | grep 'flexnet-gx' | awk '{print $1}')
-
-# Remove Docker volumes
-docker volume rm $(docker volume ls | grep 'flexnet-gx' | awk '{print $2}')
-```
-
-### 7. Cloud Resource Cleanup
-
-#### AWS Resources
-```bash
-# List and delete Lambda functions
-aws lambda list-functions | grep flexnet-gx
-aws lambda delete-function --function-name flexnet-gx-lambda
-
-# Empty and delete S3 bucket
-aws s3 rm s3://your-bucket-name --recursive
-aws s3 rb s3://your-bucket-name
-
-# Delete CloudFront distribution
-aws cloudfront delete-distribution --id your-distribution-id
-
-# Delete API Gateway
-aws apigateway delete-rest-api --rest-api-id your-api-id
-```
-
-#### Near Protocol Resources
-```bash
-# Delete testnet contract
-near delete contract.testnet contract.testnet
-
-# Remove local Near development files
-rm -rf ~/.near
-```
-
-### 8. Complete Project Removal
-```bash
-# Navigate up and remove entire project
-cd ../
-rm -rf FlexNetGX/
-
-# Remove any backup files
-rm -rf FlexNetGX.backup/
-rm -f FlexNetGX*.tar.gz
-```
-
-### 9. Verify Cleanup
-```bash
-# Check for any remaining processes
-ps aux | grep -i "flexnet-gx"
-
-# Check for remaining files in home directory
-find ~/ -name "*flexnet-gx*" -type f
-find ~/ -name "*unsterlink*" -type f
-
-# Check for remaining Docker artifacts
-docker ps -a | grep flexnet-gx
-docker images | grep flexnet-gx
-docker volume ls | grep flexnet-gx
-
-# Check for remaining system services
-systemctl list-units | grep -i "flexnet-gx"
-```
-
-## Additional Cleanup Notes
-
-1. **Hidden Files**:
-   - Check for hidden directories in home: `ls -la ~/.*flexnet*`
-   - Check for hidden configurations: `find ~/ -type f -name ".*flexnet*"`
-
-2. **System Logs**:
-   - Clear related system logs: `sudo journalctl --vacuum-time=1s`
-   - Check `/var/log/` for any remaining log files
-
-3. **Database**:
-   - Ensure all SQLite database files are removed: `find / -name "unsterlink.db" 2>/dev/null`
-   - Check for any backup database files: `find / -name "unsterlink.db.*" 2>/dev/null`
-
-4. **Temporary Files**:
-   - Clean temp directories: `find /tmp -name "*flexnet*" -exec rm -rf {} +`
-   - Clean user cache: `rm -rf ~/.cache/*flexnet*`
-
-Remember to:
-1. Back up any important data before running these commands
-2. Run commands with appropriate permissions
-3. Verify cloud resource deletion to avoid ongoing charges
-4. Log out and back in (or restart) after cleanup to ensure all changes take effect
+[Previous content remains exactly the same until each section end, where we add:]
+[⬆️ back to top](#flexnet-gx-application)

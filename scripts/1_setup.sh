@@ -952,6 +952,10 @@ LAMBDA_HANDLER=bootstrap
 LAMBDA_ROLE_NAME=your-lambda-role-name
 LAMBDA_ROLE_ARN=your-lambda-role-arn
 
+NEAR_ACCOUNT_ID=your-account-name.testnet
+NEAR_NETWORK=testnet
+NEAR_CONTRACT_NAME=flexnetgx.testnet
+
 - - - - - - - - - - - - 
 // use this to create a .env file with your information in the same path as this file
 // Run encrypt_env.sh 
