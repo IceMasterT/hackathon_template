@@ -989,7 +989,7 @@ echo "LAMBDA_RUNTIME: $LAMBDA_RUNTIME"
 echo "LAMBDA_HANDLER: $LAMBDA_HANDLER"
 echo "LAMBDA_ROLE_ARN: $LAMBDA_ROLE_ARN"
 echo "Debug: LAMBDA_FUNCTION being used: $LAMBDA_FUNCTION_NAME"
-echo "Debug: KMS_KEY_ID: $KMS_KEY_ID"
+echo "Debug: _KEY_ID: $_KEY_ID"
 echo "Debug: ENCRYPTED_LAMBDA_ROLE_NAME from .env: $ENCRYPTED_LAMBDA_ROLE_NAME"
 echo "Debug: Decrypted LAMBDA_ROLE_ARN: $LAMBDA_ROLE_ARN"
 
@@ -1025,7 +1025,7 @@ decrypt_secret() {
     if [ -z "$encrypted_value" ]; then
         echo ""
     else
-        aws kms decrypt --ciphertext-blob fileb://<(echo "$encrypted_value" | base64 -d) \
+        aws  decrypt --ciphertext-blob fileb://<(echo "$encrypted_value" | base64 -d) \
             --output text --query Plaintext | base64 --decode
     fi
 }
@@ -1209,8 +1209,8 @@ set -e
 # Set the path to AWS CLI
 AWS_CLI="aws"
 
-# KMS key ID
-KMS_KEY_ID="4355f5e5-194c-451b-8303-e81dddd8a341"
+#  key ID
+KMS_KEY_ID="xxxxf5e5-194c-xx1b-xxxx-e81xxxx8a341" # Enter Your Key ID
 
 # Function to encrypt a value
 encrypt_value() {
