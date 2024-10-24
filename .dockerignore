@@ -1,0 +1,43 @@
+# Version control
+.git
+.gitignore
+
+# Build artifacts
+**/target/
+**/pkg/
+**/dist/
+**/node_modules/
+
+# Environment files (will be mounted)
+.env
+.env.*
+
+# Development files
+**/.vscode/
+**/.idea/
+**/*.rs.bk
+**/*.wasm
+**/*.d.ts
+**/*.js.map
+.DS_Store
+
+# Temporary files
+**/*.swp
+**/*.swo
+**/tmp/
+
+# AWS credentials (will be mounted)
+.aws/
+
+# Near credentials (will be mounted)
+.near-credentials/
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE

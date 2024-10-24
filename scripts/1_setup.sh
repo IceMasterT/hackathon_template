@@ -69,9 +69,6 @@ setup_flexnet_gx() {
     check_wasm_pack
     check_near_cli
 
-    # Move to parent directory
-    cd ..
-
     # Create the main UNsterlink directory
     check_and_create_dir "FlexNetGX"
     cd FlexNetGX
