@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  unsterlink:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unsterlink
+    environment:
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - NEAR_ENV=${NEAR_ENV}
+    volumes:
+      - ./scripts:/app/FlexNetGX/scripts
+      - ./.env:/app/FlexNetGX/.env
+      - ./data:/app/data
+      - ~/.aws:/root/.aws
+      - ~/.near-credentials:/root/.near-credentials
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+    networks:
+      - unsterlink-network
+
+networks:
+  unsterlink-network:
+    driver: bridge
