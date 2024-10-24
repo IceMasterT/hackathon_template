@@ -1,0 +1,39 @@
+name: Rust - All Branches
+
+on:
+  push:
+    branches:
+      - "**" # This will match all branches and forks
+  pull_request:
+    branches:
+      - "**" # PRs across any branches and forks
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        run: rustup install stable
+
+      - name: Install dependencies
+        run: |
+          rustup component add clippy
+          rustup component add rustfmt
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Run tests
+        run: cargo test --verbose
+
+      - name: Run Clippy for linting
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Format code
+        run: cargo fmt -- --check

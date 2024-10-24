@@ -69,6 +69,9 @@ setup_flexnet_gx() {
     check_wasm_pack
     check_near_cli
 
+    # Move to parent directory
+    cd ..
+
     # Create the main UNsterlink directory
     check_and_create_dir "FlexNetGX"
     cd FlexNetGX
@@ -152,6 +155,8 @@ near-api = "0.2.0"
 aes-gcm = "0.10"
 sha2 = "0.10"
 hex = "0.4"
+getrandom = { version = "0.2", features = ["js"] }
+
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -195,6 +200,9 @@ near-sdk = "5.5.0"
 aes-gcm = "0.10"
 sha2 = "0.10"
 hex = "0.4"
+
+getrandom = { version = "0.2", features = ["js"] }
+
 
 [target.'cfg(target_os = "android")'.dependencies]
 ndk-glue = "0.7"
@@ -247,6 +255,8 @@ near-sdk = "5.5.0"
 aes-gcm = "0.10"
 sha2 = "0.10"
 hex = "0.4"
+getrandom = { version = "0.2", features = ["js"] }
+
 
 [[bin]]
 name = "bootstrap"
@@ -279,6 +289,8 @@ near-contract-standards = "4.0.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 borsh = "0.9"
+getrandom = { version = "0.2", features = ["js"] }
+
 
 [profile.release]
 codegen-units = 1
@@ -344,6 +356,7 @@ EOF
 
     # Create scripts directory if it doesn't exist
     check_and_create_dir "scripts"
+
 
     # Create test script
     cat << 'EOF' > scripts/test.sh
@@ -575,6 +588,229 @@ if [ "$1" == "--help" ]; then
 else
     run_tests "$@"
 fi
+
+# Create test script
+cat << 'EOF' > scripts/test.sh
+    # UNsterlink Testing Suite
+    # Comprehensive testing script for all components
+    #!/bin/bash
+
+    set -e
+
+    # Colors for output
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    BLUE='\033[0;34m'
+    YELLOW='\033[1;33m'
+    NC='\033[0m'
+
+# Test environment configuration
+    export NODE_ENV=test
+    export NEAR_ENV=testnet
+
+# Load environment variables
+    if [ ! -f "../.env" ]; then
+        echo -e "${RED}Error: .env file not found in parent directory${NC}"
+        exit 1
+    fi
+    source ../.env
+
+# Function to run Near Protocol contract tests
+    test_near_contract() {
+        echo -e "\n${BLUE}Testing Near Protocol Smart Contract...${NC}"
+        cd ../flexnet-gx-blockchain
+
+        echo "Running unit tests..."
+        cargo test -- --nocapture
+
+        echo "Running integration tests..."
+        cargo test --features integration-tests -- --nocapture
+
+        # Deploy to testnet for end-to-end testing
+        if [ "$RUN_E2E" = true ]; then
+            echo "Deploying to testnet for E2E testing..."
+            near dev-deploy --wasmFile target/wasm32-unknown-unknown/release/flexnet_gx_blockchain.wasm
+        fi
+
+        cd ../scripts
+    }
+
+# Function to test Lambda functions
+    test_lambda() {
+        echo -e "\n${BLUE}Testing AWS Lambda Functions...${NC}"
+        cd ../flexnet-gx-lambda
+
+        echo "Running unit tests..."
+        cargo test -- --nocapture
+
+        if [ "$RUN_E2E" = true ]; then
+            echo "Running integration tests with AWS..."
+            cargo test --features integration-tests -- --nocapture
+        fi
+
+        cd ../scripts
+    }
+
+# Function to test frontend
+    test_frontend() {
+        echo -e "\n${BLUE}Testing Frontend Components...${NC}"
+        cd ../flexnet-gx-web
+
+        echo "Running unit tests..."
+        wasm-pack test --node
+
+        if [ "$RUN_E2E" = true ]; then
+            echo "Running E2E tests..."
+            wasm-pack test --headless --firefox
+        fi
+
+        cd ../scripts
+    }
+
+# Function to run database tests using SQLite
+    test_database() {
+        echo -e "\n${BLUE}Testing Database Operations with SQLite...${NC}"
+    
+    # Check if the SQLite database file exists, create it if it doesn't
+        DB_FILE="../tests/db/unsterlink.db"
+        if [ ! -f "$DB_FILE" ]; then
+            echo "Creating SQLite database file: unsterlink.db..."
+            sqlite3 "$DB_FILE" "VACUUM;"
+        else
+            echo "SQLite database file already exists: unsterlink.db"
+        fi
+    
+    # Test database migrations
+        echo "Testing database migrations..."
+        sqlite3 "$DB_FILE" < ../tests/db/migrations_test.sql
+
+    # Test database queries
+        echo "Testing database queries..."
+        sqlite3 "$DB_FILE" < ../tests/db/queries_test.sql
+    }
+
+# Function to test API endpoints
+    test_api() {
+        echo -e "\n${BLUE}Testing API Endpoints...${NC}"
+    
+        if [ "$RUN_E2E" = true ]; then
+            echo "Testing live API endpoints..."
+            curl -s "$API_ENDPOINT/health" || echo "API health check failed"
+        else
+            echo "Running mock API tests..."
+            cd ../tests/api
+            node run_api_tests.js
+            cd ../../scripts
+        fi
+    }
+
+# Function to run security tests
+    run_security_tests() {
+        echo -e "\n${BLUE}Running Security Tests...${NC}"
+
+        echo "Checking dependencies for vulnerabilities..."
+        cargo audit
+
+        if command -v zap-cli &> /dev/null; then
+            echo "Running OWASP ZAP scan..."
+            zap-cli quick-scan --self-contained --spider -r "$API_ENDPOINT"
+        fi
+    }
+
+# Function to run performance tests
+    run_performance_tests() {
+        echo -e "\n${BLUE}Running Performance Tests...${NC}"
+
+        echo "Testing contract performance..."
+        cd ../flexnet-gx-blockchain
+        cargo bench
+        cd ../scripts
+
+        if command -v ab &> /dev/null; then
+            echo "Running API performance tests..."
+            ab -n 1000 -c 10 "$API_ENDPOINT/health"
+        fi
+    }
+
+# Function to generate test reports
+    generate_test_report() {
+        echo -e "\n${BLUE}Generating Test Reports...${NC}"
+    
+        REPORT_DIR="../test-reports"
+        mkdir -p "$REPORT_DIR"
+
+        echo "Test Report - $(date)" > "$REPORT_DIR/test_report.txt"
+        echo "===================" >> "$REPORT_DIR/test_report.txt"
+    
+        find ../ -name "*.test-results" -exec cat {} \; >> "$REPORT_DIR/test_report.txt"
+
+        if [ "$GENERATE_COVERAGE" = true ]; then
+            echo "Generating coverage report..."
+            cargo tarpaulin --out Html --output-dir "$REPORT_DIR/coverage"
+        fi
+    }
+
+# Function to run cleanup after tests
+    cleanup_test_environment() {
+        echo -e "\n${BLUE}Cleaning up test environment...${NC}"
+    
+        # Clean up test database for SQLite
+        echo "Cleaning up SQLite test database..."
+        rm ../tests/db/unsterlink.db || true
+
+        if [ "$RUN_E2E" = true ]; then
+            near delete test.near
+        fi
+
+        rm -rf ../target/debug/deps/test*
+    }
+
+# Main test execution function
+    run_tests() {
+        echo -e "${BLUE}Starting UNsterlink Test Suite...${NC}"
+    
+        RUN_E2E=false
+        GENERATE_COVERAGE=false
+    
+        while [[ "$#" -gt 0 ]]; do
+            case $1 in
+                --e2e) RUN_E2E=true ;;
+                --coverage) GENERATE_COVERAGE=true ;;
+                *) echo "Unknown parameter: $1"; exit 1 ;;
+            esac
+            shift
+        done
+
+        test_near_contract
+        test_lambda
+        test_frontend
+        test_database
+        test_api
+        run_security_tests
+        run_performance_tests
+
+        generate_test_report
+        cleanup_test_environment
+
+        echo -e "${GREEN}All tests completed successfully!${NC}"
+    }
+
+# Show test suite usage
+    show_usage() {
+        echo -e "Usage: $0 [options]"
+        echo -e "Options:"
+        echo -e "  --e2e        Run end-to-end tests"
+        echo -e "  --coverage   Generate coverage reports"
+        echo -e "Example: $0 --e2e --coverage"
+    }
+
+# Main execution
+    if [ "$1" == "--help" ]; then
+        show_usage
+        else
+        run_tests "$@"
+    fi
+
 EOF
 
 cat << 'EOF' > scripts/deploy-lambda.sh
@@ -951,6 +1187,7 @@ LAMBDA_RUNTIME=provided.al2
 LAMBDA_HANDLER=bootstrap
 LAMBDA_ROLE_NAME=your-lambda-role-name
 LAMBDA_ROLE_ARN=your-lambda-role-arn
+
 
 NEAR_ACCOUNT_ID=your-account-name.testnet
 NEAR_NETWORK=testnet
