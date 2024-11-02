@@ -6,7 +6,7 @@ set -e
 AWS_CLI="aws"
 
 # KMS key ID
-KMS_KEY_ID="4355f5e5-194c-451b-8303-e81dddd8a341"
+KMS_KEY_ID="4355f5e5-194c-451b-8303-e81dddd8a341" # example for encryption
 
 # Function to encrypt a value
 encrypt_value() {
